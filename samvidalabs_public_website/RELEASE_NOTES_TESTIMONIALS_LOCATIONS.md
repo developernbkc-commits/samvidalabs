@@ -1,0 +1,1 @@
+This drop-in updates testimonials to use GitHub raw image URLs, increases logo size, expands locations to Hyderabad/Vijayawada/Guntur/Visakhapatnam/Pune, marks online cohorts as worldwide, and makes registration more practical with institute-location routing.

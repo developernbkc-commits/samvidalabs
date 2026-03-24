@@ -1,0 +1,18 @@
+CohortAI Labs Website v4_14 (conversion-focused iteration)
+
+Highlights
+- Upgraded Track Finder with:
+  - weekly time commitment selector
+  - preferred mode selector (hybrid/online/offline)
+  - recommendation fit score meter
+  - stronger human-guidance reassurance text
+  - "Get a human recommendation" CTA
+- Added lead/counselling conversion section (friendly no-pressure guidance messaging)
+- Added city-wise seat availability panel with WhatsApp seat check CTA
+- Added track comparison table on Courses page
+- Added stronger enterprise upsell block on Courses page
+- Added desktop + mobile sticky conversion CTA bar (counselling / WhatsApp / call)
+- Updated buildVersion in src/lib/site.ts to v4.14
+
+Editable conversion knobs
+- src/lib/site.ts -> seatAvailability, leadMagnet, startDate, phone, email, whatsapp

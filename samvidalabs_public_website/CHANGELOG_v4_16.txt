@@ -1,0 +1,18 @@
+CohortAI Labs Website - v4.16 (conversion-focused gamification) - 2026-02-23
+
+Added:
+- localStorage-based streak counter + XP progression (Track Finder + AI Readiness Assessment)
+- animated XP progress bars
+- milestone unlock banners (Explorer / Consistency / Workflow Builder / Fast-Track Ready)
+- Track Finder lead magnet capture flow for 7-Day AI Starter Challenge PDF (Netlify form-ready)
+- WhatsApp prefilled messages with selected track, fit score, budget, time commitment, and mode
+- Quiz share card image export (PNG canvas export)
+- conversion-oriented gamified prompts and guidance copy
+
+Updated:
+- site.buildVersion -> v4.16-2026-02-23
+- leadMagnet config with challenge PDF fields in src/lib/site.ts
+
+Note:
+- Netlify form endpoint posts to /thanks (existing page)
+- localStorage key used: cohortai_gamify_v416

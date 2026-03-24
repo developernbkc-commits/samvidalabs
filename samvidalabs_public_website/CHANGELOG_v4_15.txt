@@ -1,0 +1,8 @@
+CohortAI Labs Website - v4.15 (Gamification / Fun / Engagement Pass)
+Date: 2026-02-24
+
+What changed:
+- Added homepage gamification section with milestone badges + 7-day challenge
+- Enhanced Track Finder recommendation panel with milestone badge, challenge, reward, consistency tip
+- Enhanced /quiz page with progress tracking, share-ready summary, mini challenge tasks, milestone UI
+- Updated buildVersion to v4.15
