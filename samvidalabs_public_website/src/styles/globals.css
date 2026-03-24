@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+* { -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(120, 119, 198, 0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.13), transparent 28%),
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,0.9), rgba(244, 244, 248, 0.96) 38%, #f5f2ee 100%);
+  color: #0f172a;
+}
+
+@layer base {
+  ::selection {
+    background: rgba(45, 212, 191, 0.26);
+    color: #0f172a;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .glass {
+    background: linear-gradient(180deg, rgba(10, 18, 40, 0.94), rgba(22, 34, 63, 0.90));
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow:
+      0 20px 70px rgba(15,23,42,0.18),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter: blur(16px);
+  }
+  .glass-pearl {
+    background: rgba(255,255,255,0.82);
+    border: 1px solid rgba(255,255,255,0.82);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.10);
+    backdrop-filter: blur(18px);
+  }
+  .ring-soft {
+    box-shadow:
+      0 0 0 1px rgba(148, 163, 184, 0.14),
+      0 30px 100px rgba(15,23,42,0.18);
+  }
+  .neon-edge {
+    box-shadow:
+      0 0 0 1px rgba(34, 211, 238, 0.18),
+      0 0 30px rgba(167, 139, 250, 0.12),
+      0 0 60px rgba(16, 185, 129, 0.08);
+  }
+  .interactive-card {
+    transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+    will-change: transform;
+  }
+  .interactive-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 70px rgba(15,23,42,0.16);
+    border-color: rgba(99,102,241,0.22);
+  }
+  .section-divider {
+    border-top: 1px solid rgba(148,163,184,0.18);
+  }
+  .page-shell {
+    position: relative;
+    isolation: isolate;
+  }
+  .page-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(103, 232, 249, 0.14), transparent 25%),
+      radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.14), transparent 26%),
+      radial-gradient(circle at 60% 80%, rgba(52, 211, 153, 0.10), transparent 20%);
+  }
+}

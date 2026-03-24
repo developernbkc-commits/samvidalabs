@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-02-24",
+  "items": [
+    {
+      "id": "ss-001",
+      "name": "Anusha R.",
+      "role": "Homemaker",
+      "city": "Hyderabad",
+      "profileSegment": "Everyday AI",
+      "programTrack": "Everyday AI",
+      "deliveryMode": "Hybrid",
+      "timeline": "3 weeks",
+      "before": "Used WhatsApp and YouTube only; no confidence with AI tools.",
+      "after": "Created daily prompt routines, family budgeting assistant, and simple document drafting workflow.",
+      "metrics": [
+        { "label": "Practice submissions", "value": "12" },
+        { "label": "AI tasks automated", "value": "8+" },
+        { "label": "Confidence", "value": "Beginner → Comfortable" }
+      ],
+      "quote": "Mentor support made AI feel practical and not intimidating.",
+      "proofType": "mentor-reviewed outputs",
+      "featured": true
+    },
+    {
+      "id": "ss-002",
+      "name": "Rahul S.",
+      "role": "Small Business Owner",
+      "city": "Vijayawada",
+      "profileSegment": "Business AI",
+      "programTrack": "Business AI",
+      "deliveryMode": "Online",
+      "timeline": "4 weeks",
+      "before": "Manual content posting and inconsistent customer follow-ups.",
+      "after": "Built weekly content calendar, lead follow-up prompts, and response templates for enquiries.",
+      "metrics": [
+        { "label": "Content workflow", "value": "30-day system" },
+        { "label": "Follow-up time", "value": "-50%" },
+        { "label": "Templates created", "value": "25+" }
+      ],
+      "quote": "The cohort format kept me accountable and I implemented during the course itself.",
+      "proofType": "case-study workbook",
+      "featured": true
+    },
+    {
+      "id": "ss-003",
+      "name": "Kiran P.",
+      "role": "Software Engineer",
+      "city": "Pune",
+      "profileSegment": "Tech & Data AI",
+      "programTrack": "Tech & Data AI",
+      "deliveryMode": "Hybrid",
+      "timeline": "6 weeks",
+      "before": "Knew coding, but not how to apply AI tools for developer productivity and portfolio proof.",
+      "after": "Completed portfolio project, code-review prompts, and interview-ready documentation.",
+      "metrics": [
+        { "label": "Portfolio projects", "value": "2" },
+        { "label": "Review rubrics", "value": "3" },
+        { "label": "Interview prep", "value": "Mock rounds" }
+      ],
+      "quote": "I liked that every deliverable had mentor feedback instead of just lectures.",
+      "proofType": "portfolio review + mock interview",
+      "featured": true
+    },
+    {
+      "id": "ss-004",
+      "name": "Priyanka M.",
+      "role": "Marketing Executive",
+      "city": "Guntur",
+      "profileSegment": "Business AI",
+      "programTrack": "Business AI",
+      "deliveryMode": "Online",
+      "timeline": "2 weeks",
+      "before": "Spent hours rewriting campaign copy and follow-up emails.",
+      "after": "Built reusable campaign prompt library and approval-ready draft workflow.",
+      "metrics": [
+        { "label": "Draft turnaround", "value": "Same-day" },
+        { "label": "Prompt library", "value": "40+" },
+        { "label": "Campaign consistency", "value": "Improved" }
+      ],
+      "quote": "This was practical coaching, not generic AI theory.",
+      "proofType": "campaign deliverables",
+      "featured": false
+    },
+    {
+      "id": "ss-005",
+      "name": "Mahesh T.",
+      "role": "Non-tech Graduate",
+      "city": "Vizag",
+      "profileSegment": "Everyday AI",
+      "programTrack": "Everyday AI",
+      "deliveryMode": "Hybrid",
+      "timeline": "3 weeks",
+      "before": "Unsure where to start with AI and overwhelmed by tool choices.",
+      "after": "Created learning plan, personal productivity toolkit, and starter project outputs.",
+      "metrics": [
+        { "label": "Starter outputs", "value": "6" },
+        { "label": "Mentor reviews", "value": "4" },
+        { "label": "Learning plan", "value": "90 days" }
+      ],
+      "quote": "The structure and feedback made me take consistent action.",
+      "proofType": "mentor checklists",
+      "featured": false
+    }
+  ]
+}

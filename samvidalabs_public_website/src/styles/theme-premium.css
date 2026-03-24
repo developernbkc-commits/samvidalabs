@@ -1,0 +1,8 @@
+:root{
+  --brand-primary:#0d2240;
+  --brand-accent:#7c5cff;
+  --brand-glow:#5ff0d6;
+  --brand-surface:#ffffff;
+  --brand-ink:#132033;
+}
+body{background:linear-gradient(180deg,#f7f5f0,#eef3f9);}

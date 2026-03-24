@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-02-24",
+  "currency": "INR",
+  "packages": [
+    {
+      "id": "ent-bootcamp",
+      "name": "AI Readiness Bootcamp",
+      "audience": "Leadership + functional teams",
+      "timeline": "1–2 weeks",
+      "delivery": ["Online", "Onsite", "Hybrid"],
+      "format": "Executive briefing + hands-on labs",
+      "outcomes": [
+        "Role-wise AI use-case discovery",
+        "Adoption roadmap by team",
+        "Guardrails and responsible use checklist"
+      ],
+      "quoteMode": "custom",
+      "featured": true
+    },
+    {
+      "id": "ent-role-academy",
+      "name": "Role-Based AI Academy",
+      "audience": "Editors, sales, ops, support, managers, analysts",
+      "timeline": "4–8 weeks",
+      "delivery": ["Online", "Hybrid"],
+      "format": "Cohort training with assessments",
+      "outcomes": [
+        "Customized learning tracks by role",
+        "Mentor-reviewed assignments",
+        "Online scoring exams + completion analytics"
+      ],
+      "quoteMode": "custom",
+      "featured": true
+    },
+    {
+      "id": "ent-capability-program",
+      "name": "Capability Transformation Program",
+      "audience": "Multi-team enterprise rollout",
+      "timeline": "8–16 weeks",
+      "delivery": ["Hybrid", "Onsite"],
+      "format": "Program-managed transformation",
+      "outcomes": [
+        "Dedicated program manager",
+        "Custom material and timelines",
+        "Secure digital certificates and audit-ready completion records"
+      ],
+      "quoteMode": "custom",
+      "featured": false
+    }
+  ]
+}

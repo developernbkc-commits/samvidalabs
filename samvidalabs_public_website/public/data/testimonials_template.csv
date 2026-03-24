@@ -1,0 +1,4 @@
+id,name,role,city,track,rating,quote,source,featured
+T001,Priya S.,Homemaker,Hyderabad,Everyday AI,5,"Mentor-led and simple explanations helped me use AI in daily life.",WhatsApp,true
+T002,Rahul K.,Freelance Consultant,Pune,Business AI,5,"Built content and follow-up workflows that save time each week.",Call feedback,true
+T003,Akhila M.,Software Engineer,Vizag,Tech & Data AI,5,"Practical projects and reviews improved my portfolio confidence.",Learner review,false

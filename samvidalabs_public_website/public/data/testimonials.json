@@ -1,0 +1,51 @@
+{
+  "version": "1.1",
+  "updatedAt": "2026-03-16",
+  "schema": "cohortai.testimonials.v1",
+  "items": [
+    {
+      "id": "t101",
+      "name": "Anand Balan",
+      "role": "Technical Lead at KhetiBuddy AgriTech",
+      "city": "Pune",
+      "track": "Tech & Data AI",
+      "rating": 5,
+      "quote": "Material is so good that it doesn't feel exhaustive or even like putting efforts. I enjoyed it as if I'm watching a Discovery documentary :). I'm handling things very professionally now and I noticed the change in me from the first few days of starting the course.",
+      "source": "Certificate holder",
+      "featured": true
+    },
+    {
+      "id": "t102",
+      "name": "Ajay Cherukuri",
+      "role": "Software Engineer at Indo Mim Limited",
+      "city": "Online",
+      "track": "Tech & Data AI",
+      "rating": 5,
+      "quote": "Thank you for the online training provided by Cohort AI Labs. I'm now a different person at work. My productivity skyrocketed and things are much easier now.",
+      "source": "Certificate holder",
+      "featured": true
+    },
+    {
+      "id": "t103",
+      "name": "P. Shankar Raghavendra",
+      "role": "Aspiring ML Engineer",
+      "city": "Online",
+      "track": "Tech & Data AI",
+      "rating": 5,
+      "quote": "Thank you all for tailoring the program specially for me. I'm attending interviews with great confidence now and my SaaS project gained momentum during this course.",
+      "source": "Certificate holder",
+      "featured": false
+    },
+    {
+      "id": "t104",
+      "name": "Sai Vineeth Modugavarapu",
+      "role": "Aspiring Data Scientist",
+      "city": "Online",
+      "track": "Tech & Data AI",
+      "rating": 5,
+      "quote": "So much information to grasp during the course, but awesome illustrations and practicals made it very easy to understand. Thank you Sasikala Madam.",
+      "source": "Certificate holder",
+      "featured": false
+    }
+  ]
+}
