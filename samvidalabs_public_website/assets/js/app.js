@@ -1,126 +1,79 @@
-document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener('DOMContentLoaded', () => {
   const root = document.documentElement;
-  const navToggle = document.querySelector("[data-nav-toggle]");
-  const nav = document.querySelector("[data-nav]");
+  const navToggle = document.querySelector('[data-nav-toggle]');
+  const nav = document.querySelector('[data-nav]');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isDesktop = window.matchMedia('(min-width: 961px)').matches;
+
   if (navToggle && nav) {
-    navToggle.addEventListener("click", () => {
-      const open = nav.classList.toggle("open");
-      navToggle.setAttribute("aria-expanded", String(open));
+    navToggle.addEventListener('click', () => {
+      const open = nav.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', String(open));
     });
-    document.querySelectorAll("[data-nav-link]").forEach((link) => {
-      link.addEventListener("click", () => {
-        nav.classList.remove("open");
-        navToggle.setAttribute("aria-expanded", "false");
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
       });
     });
   }
 
-  document.querySelectorAll("[data-year]").forEach((node) => {
+  document.querySelectorAll('[data-year]').forEach((node) => {
     node.textContent = String(new Date().getFullYear());
   });
 
-  const current = document.body.dataset.page || "";
-  document.querySelectorAll("[data-nav-link]").forEach((link) => {
-    if (link.getAttribute("data-nav-link") === current) {
-      link.classList.add("active");
-    }
-  });
-
-  const updateGlow = (event) => {
-    root.style.setProperty("--mx", `${event.clientX}px`);
-    root.style.setProperty("--my", `${event.clientY}px`);
-  };
-  window.addEventListener("pointermove", updateGlow, { passive: true });
-
-  const progressBar = document.querySelector("[data-progress]");
+  const progress = document.querySelector('[data-progress]');
   const updateProgress = () => {
-    if (!progressBar) return;
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const value = max > 0 ? (window.scrollY / max) * 100 : 0;
-    progressBar.style.width = `${Math.min(100, Math.max(0, value))}%`;
+    if (!progress) return;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+    progress.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
   };
   updateProgress();
-  window.addEventListener("scroll", updateProgress, { passive: true });
-  window.addEventListener("resize", updateProgress);
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
 
-  const revealNodes = document.querySelectorAll(
-    ".section-head, .card, .panel, .callout, .page-hero-panel, .hero-copy, .hero-scene, .timeline-card, .form-shell, .info-card, .showcase-card, .story-card, .tall-card, .metric-card, .footer-card, .faq-item"
-  );
-  revealNodes.forEach((node, index) => {
-    node.classList.add("reveal");
-    node.style.transitionDelay = `${Math.min(index % 4, 3) * 70}ms`;
+  const cursorHalo = document.querySelector('.cursor-halo');
+  const updatePointer = (event) => {
+    root.style.setProperty('--mx', `${event.clientX}px`);
+    root.style.setProperty('--my', `${event.clientY}px`);
+    document.body.classList.add('pointer-active');
+    if (cursorHalo && !prefersReduced) {
+      cursorHalo.style.left = `${event.clientX}px`;
+      cursorHalo.style.top = `${event.clientY}px`;
+    }
+  };
+  window.addEventListener('pointermove', updatePointer, { passive: true });
+  window.addEventListener('pointerdown', updatePointer, { passive: true });
+
+  const revealNodes = [...document.querySelectorAll('.reveal-on-scroll')];
+  revealNodes.forEach((node, i) => {
+    node.style.transitionDelay = `${Math.min(i % 5, 4) * 60}ms`;
   });
-
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    revealNodes.forEach((node) => node.classList.add("is-visible"));
+  if (prefersReduced) {
+    revealNodes.forEach((node) => node.classList.add('is-visible'));
   } else {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
+          entry.target.classList.add('is-visible');
           observer.unobserve(entry.target);
         }
       });
-    }, {
-      threshold: 0.14,
-      rootMargin: "0px 0px -40px 0px"
-    });
+    }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
     revealNodes.forEach((node) => observer.observe(node));
   }
 
-  const allowTilt = window.matchMedia("(min-width: 961px)").matches &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (allowTilt) {
-    document.querySelectorAll("[data-tilt]").forEach((node) => {
-      node.classList.add("tilt-card");
-      const maxTilt = Number(node.getAttribute("data-tilt-max") || 6);
-      let frame = 0;
-
+  if (!prefersReduced) {
+    document.querySelectorAll('[data-magnetic]').forEach((node) => {
+      const strength = Number(node.getAttribute('data-magnetic') || 18);
+      let frame = null;
       const reset = () => {
-        cancelAnimationFrame(frame);
-        node.style.setProperty("--rx", "0deg");
-        node.style.setProperty("--ry", "0deg");
-        node.style.setProperty("--lift", "0px");
-        node.style.setProperty("--px", "50%");
-        node.style.setProperty("--py", "22%");
+        if (frame) cancelAnimationFrame(frame);
+        node.style.transform = '';
       };
-
-      const move = (event) => {
-        const rect = node.getBoundingClientRect();
-        const px = (event.clientX - rect.left) / rect.width;
-        const py = (event.clientY - rect.top) / rect.height;
-        const rx = ((0.5 - py) * maxTilt * 2).toFixed(2);
-        const ry = ((px - 0.5) * maxTilt * 2).toFixed(2);
-
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => {
-          node.style.setProperty("--rx", `${rx}deg`);
-          node.style.setProperty("--ry", `${ry}deg`);
-          node.style.setProperty("--lift", "-4px");
-          node.style.setProperty("--px", `${(px * 100).toFixed(1)}%`);
-          node.style.setProperty("--py", `${(py * 100).toFixed(1)}%`);
-        });
-      };
-
-      node.addEventListener("pointermove", move);
-      node.addEventListener("pointerleave", reset);
-      node.addEventListener("pointercancel", reset);
-      reset();
-    });
-  }
-
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    document.querySelectorAll("[data-magnetic]").forEach((node) => {
-      let frame = 0;
-      const strength = Number(node.getAttribute("data-magnetic") || 16);
-
-      const reset = () => {
-        cancelAnimationFrame(frame);
-        node.style.transform = "";
-      };
-
-      node.addEventListener("pointermove", (event) => {
+      node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
         const dx = event.clientX - (rect.left + rect.width / 2);
         const dy = event.clientY - (rect.top + rect.height / 2);
@@ -128,30 +81,226 @@ document.addEventListener("DOMContentLoaded", () => {
           node.style.transform = `translate(${dx / strength}px, ${dy / strength}px)`;
         });
       });
+      node.addEventListener('pointerleave', reset);
+      node.addEventListener('pointercancel', reset);
+    });
+  }
 
-      node.addEventListener("pointerleave", reset);
-      node.addEventListener("pointercancel", reset);
+  if (!prefersReduced && isDesktop) {
+    document.querySelectorAll('[data-tilt]').forEach((node) => {
+      const maxTilt = Number(node.getAttribute('data-tilt-max') || 6);
+      let raf = null;
+      const reset = () => {
+        if (raf) cancelAnimationFrame(raf);
+        node.style.setProperty('--rx', '0deg');
+        node.style.setProperty('--ry', '0deg');
+        node.style.setProperty('--lift', '0px');
+        node.style.setProperty('--px', '25%');
+        node.style.setProperty('--py', '22%');
+      };
+      const move = (event) => {
+        const rect = node.getBoundingClientRect();
+        const px = (event.clientX - rect.left) / rect.width;
+        const py = (event.clientY - rect.top) / rect.height;
+        const rx = ((0.5 - py) * maxTilt * 2).toFixed(2);
+        const ry = ((px - 0.5) * maxTilt * 2).toFixed(2);
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          node.style.setProperty('--rx', `${rx}deg`);
+          node.style.setProperty('--ry', `${ry}deg`);
+          node.style.setProperty('--lift', '-2px');
+          node.style.setProperty('--px', `${(px * 100).toFixed(2)}%`);
+          node.style.setProperty('--py', `${(py * 100).toFixed(2)}%`);
+        });
+      };
+      node.addEventListener('pointermove', move);
+      node.addEventListener('pointerleave', reset);
+      node.addEventListener('pointercancel', reset);
+      reset();
     });
 
-    document.querySelectorAll("[data-scene]").forEach((node) => {
+    document.querySelectorAll('[data-scene]').forEach((node) => {
       const reset = () => {
-        node.style.setProperty("--scene-x", "0deg");
-        node.style.setProperty("--scene-y", "0deg");
+        node.style.setProperty('--scene-rx', '0deg');
+        node.style.setProperty('--scene-ry', '0deg');
       };
-
-      node.addEventListener("pointermove", (event) => {
+      node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
         const px = (event.clientX - rect.left) / rect.width;
         const py = (event.clientY - rect.top) / rect.height;
         const rx = ((0.5 - py) * 10).toFixed(2);
         const ry = ((px - 0.5) * 12).toFixed(2);
-        node.style.setProperty("--scene-x", `${rx}deg`);
-        node.style.setProperty("--scene-y", `${ry}deg`);
+        node.style.setProperty('--scene-rx', `${rx}deg`);
+        node.style.setProperty('--scene-ry', `${ry}deg`);
       });
-
-      node.addEventListener("pointerleave", reset);
-      node.addEventListener("pointercancel", reset);
+      node.addEventListener('pointerleave', reset);
+      node.addEventListener('pointercancel', reset);
       reset();
     });
+  }
+
+  const canvas = document.querySelector('[data-force-graph]');
+  if (canvas && !prefersReduced) {
+    const parent = canvas.parentElement;
+    const ctx = canvas.getContext('2d');
+    let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let width = 0;
+    let height = 0;
+    let cx = 0;
+    let cy = 0;
+    let raf = null;
+    let pointer = { x: 0, y: 0, active: false };
+    const nodes = [];
+    const nodeCount = window.innerWidth < 760 ? 28 : 44;
+
+    const palette = [
+      ['rgba(111, 231, 255, 0.92)', 'rgba(111, 231, 255, 0.18)'],
+      ['rgba(163, 134, 255, 0.92)', 'rgba(163, 134, 255, 0.18)'],
+      ['rgba(255, 119, 213, 0.82)', 'rgba(255, 119, 213, 0.16)'],
+      ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.22)']
+    ];
+
+    function resize() {
+      const rect = parent.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      cx = width * 0.5;
+      cy = height * 0.52;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!nodes.length) seedNodes();
+    }
+
+    function seedNodes() {
+      nodes.length = 0;
+      const ring = Math.min(width, height) * 0.29;
+      for (let i = 0; i < nodeCount; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = ring * (0.45 + Math.random() * 0.95);
+        const color = palette[i % palette.length];
+        nodes.push({
+          x: cx + Math.cos(angle) * radius,
+          y: cy + Math.sin(angle) * radius * (0.72 + Math.random() * 0.3),
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          size: 1.4 + Math.random() * 3.4,
+          orbit: 0.0005 + Math.random() * 0.0018,
+          angle,
+          anchor: 0.0008 + Math.random() * 0.002,
+          hue: color,
+          depth: 0.65 + Math.random() * 0.7,
+        });
+      }
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, width, height);
+      const maxLink = Math.min(width, height) * 0.22;
+      const orbitBase = Math.min(width, height) * 0.26;
+      nodes.forEach((node, i) => {
+        node.angle += node.orbit;
+        const targetRadius = orbitBase * (0.55 + (i % 7) * 0.085 + (i / nodes.length) * 0.35);
+        const targetX = cx + Math.cos(node.angle + i * 0.12) * targetRadius;
+        const targetY = cy + Math.sin(node.angle + i * 0.11) * targetRadius * 0.68;
+        node.vx += (targetX - node.x) * node.anchor;
+        node.vy += (targetY - node.y) * node.anchor;
+        if (pointer.active) {
+          const dx = pointer.x - node.x;
+          const dy = pointer.y - node.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          if (dist < 160) {
+            const push = (160 - dist) / 160;
+            node.vx -= (dx / dist) * push * 0.45;
+            node.vy -= (dy / dist) * push * 0.45;
+          } else if (dist < 260) {
+            const pull = (260 - dist) / 260;
+            node.vx += (dx / dist) * pull * 0.03;
+            node.vy += (dy / dist) * pull * 0.03;
+          }
+        }
+        node.vx *= 0.965;
+        node.vy *= 0.965;
+        node.x += node.vx * node.depth;
+        node.y += node.vy * node.depth;
+      });
+
+      for (let i = 0; i < nodes.length; i += 1) {
+        for (let j = i + 1; j < nodes.length; j += 1) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > maxLink) continue;
+          const alpha = (1 - dist / maxLink) ** 1.8;
+          const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+          grad.addColorStop(0, `rgba(111, 231, 255, ${0.02 + alpha * 0.26})`);
+          grad.addColorStop(0.5, `rgba(163, 134, 255, ${0.02 + alpha * 0.18})`);
+          grad.addColorStop(1, `rgba(255, 119, 213, ${0.01 + alpha * 0.16})`);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+
+      nodes.forEach((node) => {
+        const [solid, soft] = node.hue;
+        const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6);
+        glow.addColorStop(0, solid);
+        glow.addColorStop(0.25, soft);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.size * 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = solid;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // central ambient arc glows
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.sin(Date.now() * 0.0004) * 0.2);
+      for (const [w, h, alpha, color] of [
+        [width * 0.48, height * 0.22, 0.18, 'rgba(111,231,255,0.16)'],
+        [width * 0.38, height * 0.36, 0.15, 'rgba(163,134,255,0.14)'],
+        [width * 0.52, height * 0.28, 0.12, 'rgba(255,119,213,0.12)'],
+      ]) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w * 0.5, h * 0.5, Math.random() * 0.06, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      raf = requestAnimationFrame(update);
+    }
+
+    const onMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+    };
+    const onLeave = () => { pointer.active = false; };
+
+    parent.addEventListener('pointermove', onMove, { passive: true });
+    parent.addEventListener('pointerleave', onLeave);
+    parent.addEventListener('pointercancel', onLeave);
+    window.addEventListener('resize', () => {
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      resize();
+    });
+    resize();
+    update();
   }
 });
