@@ -1,34 +1,19 @@
 
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
   const root = document.documentElement;
-  const navToggle = document.querySelector('[data-nav-toggle]');
-  const nav = document.querySelector('[data-nav]');
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isDesktop = window.matchMedia('(min-width: 961px)').matches;
+  const isDesktop = window.matchMedia('(min-width: 921px)').matches;
 
-  if (navToggle && nav) {
-    navToggle.addEventListener('click', () => {
-      const open = nav.classList.toggle('open');
-      navToggle.setAttribute('aria-expanded', String(open));
-    });
-    nav.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        nav.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
-      });
-    });
-  }
+  const yearNode = document.querySelector('[data-year]');
+  if (yearNode) yearNode.textContent = new Date().getFullYear();
 
-  document.querySelectorAll('[data-year]').forEach((node) => {
-    node.textContent = String(new Date().getFullYear());
-  });
-
+  const header = document.querySelector('.site-header');
   const progress = document.querySelector('[data-progress]');
   const updateProgress = () => {
-    if (!progress) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
-    progress.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+    const ratio = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+    if (progress) progress.style.width = `${ratio * 100}%`;
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 18);
   };
   updateProgress();
   window.addEventListener('scroll', updateProgress, { passive: true });
@@ -47,21 +32,35 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('pointermove', updatePointer, { passive: true });
   window.addEventListener('pointerdown', updatePointer, { passive: true });
 
+  const navToggle = document.querySelector('[data-nav-toggle]');
+  const nav = document.querySelector('[data-nav]');
+  if (navToggle && nav) {
+    navToggle.addEventListener('click', () => {
+      const open = nav.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', String(open));
+    });
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
   const revealNodes = [...document.querySelectorAll('.reveal-on-scroll')];
   revealNodes.forEach((node, i) => {
-    node.style.transitionDelay = `${Math.min(i % 5, 4) * 60}ms`;
+    node.style.transitionDelay = `${Math.min(i % 6, 5) * 60}ms`;
   });
   if (prefersReduced) {
     revealNodes.forEach((node) => node.classList.add('is-visible'));
   } else {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+    }, { threshold: 0.12, rootMargin: '0px 0px -24px 0px' });
     revealNodes.forEach((node) => observer.observe(node));
   }
 
@@ -77,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const rect = node.getBoundingClientRect();
         const dx = event.clientX - (rect.left + rect.width / 2);
         const dy = event.clientY - (rect.top + rect.height / 2);
+        if (frame) cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => {
           node.style.transform = `translate(${dx / strength}px, ${dy / strength}px)`;
         });
@@ -95,15 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
         node.style.setProperty('--rx', '0deg');
         node.style.setProperty('--ry', '0deg');
         node.style.setProperty('--lift', '0px');
-        node.style.setProperty('--px', '25%');
-        node.style.setProperty('--py', '22%');
+        node.style.setProperty('--px', '24%');
+        node.style.setProperty('--py', '18%');
       };
-      const move = (event) => {
+      node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
         const px = (event.clientX - rect.left) / rect.width;
         const py = (event.clientY - rect.top) / rect.height;
-        const rx = ((0.5 - py) * maxTilt * 2).toFixed(2);
-        const ry = ((px - 0.5) * maxTilt * 2).toFixed(2);
+        const rx = ((0.5 - py) * maxTilt * 1.8).toFixed(2);
+        const ry = ((px - 0.5) * maxTilt * 1.8).toFixed(2);
         if (raf) cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
           node.style.setProperty('--rx', `${rx}deg`);
@@ -112,8 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
           node.style.setProperty('--px', `${(px * 100).toFixed(2)}%`);
           node.style.setProperty('--py', `${(py * 100).toFixed(2)}%`);
         });
-      };
-      node.addEventListener('pointermove', move);
+      });
       node.addEventListener('pointerleave', reset);
       node.addEventListener('pointercancel', reset);
       reset();
@@ -128,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const rect = node.getBoundingClientRect();
         const px = (event.clientX - rect.left) / rect.width;
         const py = (event.clientY - rect.top) / rect.height;
-        const rx = ((0.5 - py) * 10).toFixed(2);
-        const ry = ((px - 0.5) * 12).toFixed(2);
+        const rx = ((0.5 - py) * 8).toFixed(2);
+        const ry = ((px - 0.5) * 10).toFixed(2);
         node.style.setProperty('--scene-rx', `${rx}deg`);
         node.style.setProperty('--scene-ry', `${ry}deg`);
       });
@@ -143,90 +142,102 @@ document.addEventListener('DOMContentLoaded', () => {
   if (canvas && !prefersReduced) {
     const parent = canvas.parentElement;
     const ctx = canvas.getContext('2d');
+    const nodes = [];
+    const palette = [
+      ['rgba(136, 242, 255, 0.95)', 'rgba(136, 242, 255, 0.18)'],
+      ['rgba(157, 136, 255, 0.92)', 'rgba(157, 136, 255, 0.18)'],
+      ['rgba(255, 99, 199, 0.82)', 'rgba(255, 99, 199, 0.16)'],
+      ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.22)'],
+    ];
     let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     let width = 0;
     let height = 0;
     let cx = 0;
     let cy = 0;
     let raf = null;
-    let pointer = { x: 0, y: 0, active: false };
-    const nodes = [];
-    const nodeCount = window.innerWidth < 760 ? 28 : 44;
+    const pointer = { x: 0, y: 0, active: false };
+    const nodeCount = window.innerWidth < 760 ? 26 : 42;
 
-    const palette = [
-      ['rgba(111, 231, 255, 0.92)', 'rgba(111, 231, 255, 0.18)'],
-      ['rgba(163, 134, 255, 0.92)', 'rgba(163, 134, 255, 0.18)'],
-      ['rgba(255, 119, 213, 0.82)', 'rgba(255, 119, 213, 0.16)'],
-      ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.22)']
-    ];
+    const seedNodes = () => {
+      nodes.length = 0;
+      const base = Math.min(width, height) * 0.25;
+      for (let i = 0; i < nodeCount; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = base * (0.65 + Math.random() * 1.3);
+        const hue = palette[i % palette.length];
+        nodes.push({
+          x: cx + Math.cos(angle) * radius,
+          y: cy + Math.sin(angle) * radius * (0.68 + Math.random() * 0.32),
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          size: 1.3 + Math.random() * 3.2,
+          orbit: 0.0006 + Math.random() * 0.0016,
+          angle,
+          anchor: 0.00085 + Math.random() * 0.0022,
+          hue,
+          depth: 0.7 + Math.random() * 0.8,
+          lane: (i % 7) + 1,
+        });
+      }
+    };
 
-    function resize() {
+    const resize = () => {
       const rect = parent.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
       cx = width * 0.5;
-      cy = height * 0.52;
+      cy = height * 0.56;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (!nodes.length) seedNodes();
-    }
+      seedNodes();
+    };
 
-    function seedNodes() {
-      nodes.length = 0;
-      const ring = Math.min(width, height) * 0.29;
-      for (let i = 0; i < nodeCount; i += 1) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = ring * (0.45 + Math.random() * 0.95);
-        const color = palette[i % palette.length];
-        nodes.push({
-          x: cx + Math.cos(angle) * radius,
-          y: cy + Math.sin(angle) * radius * (0.72 + Math.random() * 0.3),
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6,
-          size: 1.4 + Math.random() * 3.4,
-          orbit: 0.0005 + Math.random() * 0.0018,
-          angle,
-          anchor: 0.0008 + Math.random() * 0.002,
-          hue: color,
-          depth: 0.65 + Math.random() * 0.7,
-        });
-      }
-    }
-
-    function update() {
-      ctx.clearRect(0, 0, width, height);
-      const maxLink = Math.min(width, height) * 0.22;
-      const orbitBase = Math.min(width, height) * 0.26;
+    const updateNodes = (time) => {
+      const orbitBase = Math.min(width, height) * 0.24;
       nodes.forEach((node, i) => {
         node.angle += node.orbit;
-        const targetRadius = orbitBase * (0.55 + (i % 7) * 0.085 + (i / nodes.length) * 0.35);
-        const targetX = cx + Math.cos(node.angle + i * 0.12) * targetRadius;
-        const targetY = cy + Math.sin(node.angle + i * 0.11) * targetRadius * 0.68;
+        const targetRadius = orbitBase * (0.58 + node.lane * 0.072 + (i / nodes.length) * 0.28);
+        const targetX = cx + Math.cos(node.angle + i * 0.09) * targetRadius;
+        const targetY = cy + Math.sin(node.angle + i * 0.1) * targetRadius * 0.66;
         node.vx += (targetX - node.x) * node.anchor;
         node.vy += (targetY - node.y) * node.anchor;
+
         if (pointer.active) {
           const dx = pointer.x - node.x;
           const dy = pointer.y - node.y;
           const dist = Math.hypot(dx, dy) || 1;
-          if (dist < 160) {
-            const push = (160 - dist) / 160;
-            node.vx -= (dx / dist) * push * 0.45;
-            node.vy -= (dy / dist) * push * 0.45;
+          if (dist < 140) {
+            const push = (140 - dist) / 140;
+            node.vx -= (dx / dist) * push * 0.52;
+            node.vy -= (dy / dist) * push * 0.52;
           } else if (dist < 260) {
             const pull = (260 - dist) / 260;
-            node.vx += (dx / dist) * pull * 0.03;
-            node.vy += (dy / dist) * pull * 0.03;
+            node.vx += (dx / dist) * pull * 0.028;
+            node.vy += (dy / dist) * pull * 0.028;
           }
         }
-        node.vx *= 0.965;
-        node.vy *= 0.965;
+        node.vx *= 0.964;
+        node.vy *= 0.964;
         node.x += node.vx * node.depth;
         node.y += node.vy * node.depth;
       });
+    };
 
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // atmosphere
+      const ambient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.45);
+      ambient.addColorStop(0, 'rgba(136,242,255,0.06)');
+      ambient.addColorStop(0.5, 'rgba(157,136,255,0.05)');
+      ambient.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ambient;
+      ctx.fillRect(0, 0, width, height);
+
+      const maxLink = Math.min(width, height) * 0.22;
       for (let i = 0; i < nodes.length; i += 1) {
         for (let j = i + 1; j < nodes.length; j += 1) {
           const a = nodes[i];
@@ -235,11 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const dy = b.y - a.y;
           const dist = Math.hypot(dx, dy);
           if (dist > maxLink) continue;
-          const alpha = (1 - dist / maxLink) ** 1.8;
+          const alpha = (1 - dist / maxLink) ** 1.9;
           const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-          grad.addColorStop(0, `rgba(111, 231, 255, ${0.02 + alpha * 0.26})`);
-          grad.addColorStop(0.5, `rgba(163, 134, 255, ${0.02 + alpha * 0.18})`);
-          grad.addColorStop(1, `rgba(255, 119, 213, ${0.01 + alpha * 0.16})`);
+          grad.addColorStop(0, `rgba(136,242,255,${0.02 + alpha * 0.22})`);
+          grad.addColorStop(0.45, `rgba(157,136,255,${0.02 + alpha * 0.16})`);
+          grad.addColorStop(1, `rgba(255,99,199,${0.01 + alpha * 0.12})`);
           ctx.strokeStyle = grad;
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -251,13 +262,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       nodes.forEach((node) => {
         const [solid, soft] = node.hue;
-        const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6);
+        const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6.4);
         glow.addColorStop(0, solid);
-        glow.addColorStop(0.25, soft);
+        glow.addColorStop(0.24, soft);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size * 6, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.size * 6.4, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = solid;
         ctx.beginPath();
@@ -265,42 +276,48 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fill();
       });
 
-      // central ambient arc glows
+      // orbit strokes
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.rotate(Math.sin(Date.now() * 0.0004) * 0.2);
-      for (const [w, h, alpha, color] of [
-        [width * 0.48, height * 0.22, 0.18, 'rgba(111,231,255,0.16)'],
-        [width * 0.38, height * 0.36, 0.15, 'rgba(163,134,255,0.14)'],
-        [width * 0.52, height * 0.28, 0.12, 'rgba(255,119,213,0.12)'],
+      const t = performance.now() * 0.00008;
+      for (const [w, h, angle, color] of [
+        [width * 0.42, height * 0.20, t * 2.6, 'rgba(136,242,255,0.18)'],
+        [width * 0.34, height * 0.34, 0.6 + t * 2.0, 'rgba(157,136,255,0.16)'],
+        [width * 0.48, height * 0.26, -0.44 + t * 1.7, 'rgba(255,99,199,0.12)'],
       ]) {
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.ellipse(0, 0, w * 0.5, h * 0.5, Math.random() * 0.06, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, w * 0.5, h * 0.5, angle, 0, Math.PI * 2);
         ctx.stroke();
       }
       ctx.restore();
+    };
 
-      raf = requestAnimationFrame(update);
-    }
+    const loop = () => {
+      updateNodes(performance.now());
+      draw();
+      raf = requestAnimationFrame(loop);
+    };
 
-    const onMove = (event) => {
-      const rect = canvas.getBoundingClientRect();
+    parent.addEventListener('pointermove', (event) => {
+      const rect = parent.getBoundingClientRect();
       pointer.x = event.clientX - rect.left;
       pointer.y = event.clientY - rect.top;
       pointer.active = true;
-    };
-    const onLeave = () => { pointer.active = false; };
+    });
+    parent.addEventListener('pointerleave', () => {
+      pointer.active = false;
+    });
+    parent.addEventListener('pointercancel', () => {
+      pointer.active = false;
+    });
 
-    parent.addEventListener('pointermove', onMove, { passive: true });
-    parent.addEventListener('pointerleave', onLeave);
-    parent.addEventListener('pointercancel', onLeave);
+    resize();
     window.addEventListener('resize', () => {
       dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
       resize();
     });
-    resize();
-    update();
+    raf = requestAnimationFrame(loop);
   }
-});
+})();
