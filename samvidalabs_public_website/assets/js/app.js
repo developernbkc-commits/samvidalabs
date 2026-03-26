@@ -120,17 +120,17 @@
 
     document.querySelectorAll('[data-scene]').forEach((node) => {
       const reset = () => {
-        node.style.setProperty('--scene-rx', '0deg');
-        node.style.setProperty('--scene-ry', '0deg');
+        node.style.setProperty('--scene-x', '50%');
+        node.style.setProperty('--scene-y', '56%');
       };
       node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
         const px = (event.clientX - rect.left) / rect.width;
         const py = (event.clientY - rect.top) / rect.height;
-        const rx = ((0.5 - py) * 8).toFixed(2);
-        const ry = ((px - 0.5) * 10).toFixed(2);
-        node.style.setProperty('--scene-rx', `${rx}deg`);
-        node.style.setProperty('--scene-ry', `${ry}deg`);
+        const sx = 46 + px * 12;
+        const sy = 50 + py * 12;
+        node.style.setProperty('--scene-x', `${sx.toFixed(2)}%`);
+        node.style.setProperty('--scene-y', `${sy.toFixed(2)}%`);
       });
       node.addEventListener('pointerleave', reset);
       node.addEventListener('pointercancel', reset);
@@ -138,186 +138,212 @@
     });
   }
 
-  const canvas = document.querySelector('[data-force-graph]');
-  if (canvas && !prefersReduced) {
-    const parent = canvas.parentElement;
-    const ctx = canvas.getContext('2d');
-    const nodes = [];
-    const palette = [
-      ['rgba(136, 242, 255, 0.95)', 'rgba(136, 242, 255, 0.18)'],
-      ['rgba(157, 136, 255, 0.92)', 'rgba(157, 136, 255, 0.18)'],
-      ['rgba(255, 99, 199, 0.82)', 'rgba(255, 99, 199, 0.16)'],
-      ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.22)'],
-    ];
-    let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    let width = 0;
-    let height = 0;
-    let cx = 0;
-    let cy = 0;
-    let raf = null;
-    const pointer = { x: 0, y: 0, active: false };
-    const nodeCount = window.innerWidth < 760 ? 26 : 42;
+const canvas = document.querySelector('[data-force-graph]');
+if (canvas && !prefersReduced) {
+  const parent = canvas.parentElement;
+  const ctx = canvas.getContext('2d');
+  const nodes = [];
+  const palette = [
+    ['rgba(136, 242, 255, 0.96)', 'rgba(136, 242, 255, 0.18)'],
+    ['rgba(166, 140, 255, 0.94)', 'rgba(166, 140, 255, 0.18)'],
+    ['rgba(255, 99, 199, 0.82)', 'rgba(255, 99, 199, 0.15)'],
+    ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.18)'],
+  ];
+  let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  let width = 0;
+  let height = 0;
+  let cx = 0;
+  let cy = 0;
+  let safeRadius = 0;
+  let raf = null;
+  const pointer = { x: 0, y: 0, active: false };
+  const nodeCount = window.innerWidth < 760 ? 24 : 36;
 
-    const seedNodes = () => {
-      nodes.length = 0;
-      const base = Math.min(width, height) * 0.25;
-      for (let i = 0; i < nodeCount; i += 1) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = base * (0.65 + Math.random() * 1.3);
-        const hue = palette[i % palette.length];
-        nodes.push({
-          x: cx + Math.cos(angle) * radius,
-          y: cy + Math.sin(angle) * radius * (0.68 + Math.random() * 0.32),
-          vx: (Math.random() - 0.5) * 0.7,
-          vy: (Math.random() - 0.5) * 0.7,
-          size: 1.3 + Math.random() * 3.2,
-          orbit: 0.0006 + Math.random() * 0.0016,
-          angle,
-          anchor: 0.00085 + Math.random() * 0.0022,
-          hue,
-          depth: 0.7 + Math.random() * 0.8,
-          lane: (i % 7) + 1,
-        });
-      }
-    };
-
-    const resize = () => {
-      const rect = parent.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
-      cx = width * 0.5;
-      cy = height * 0.56;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seedNodes();
-    };
-
-    const updateNodes = (time) => {
-      const orbitBase = Math.min(width, height) * 0.24;
-      nodes.forEach((node, i) => {
-        node.angle += node.orbit;
-        const targetRadius = orbitBase * (0.58 + node.lane * 0.072 + (i / nodes.length) * 0.28);
-        const targetX = cx + Math.cos(node.angle + i * 0.09) * targetRadius;
-        const targetY = cy + Math.sin(node.angle + i * 0.1) * targetRadius * 0.66;
-        node.vx += (targetX - node.x) * node.anchor;
-        node.vy += (targetY - node.y) * node.anchor;
-
-        if (pointer.active) {
-          const dx = pointer.x - node.x;
-          const dy = pointer.y - node.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          if (dist < 140) {
-            const push = (140 - dist) / 140;
-            node.vx -= (dx / dist) * push * 0.52;
-            node.vy -= (dy / dist) * push * 0.52;
-          } else if (dist < 260) {
-            const pull = (260 - dist) / 260;
-            node.vx += (dx / dist) * pull * 0.028;
-            node.vy += (dy / dist) * pull * 0.028;
-          }
-        }
-        node.vx *= 0.964;
-        node.vy *= 0.964;
-        node.x += node.vx * node.depth;
-        node.y += node.vy * node.depth;
+  const seedNodes = () => {
+    nodes.length = 0;
+    const base = Math.min(width, height) * 0.32;
+    for (let i = 0; i < nodeCount; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = base * (0.92 + Math.random() * 0.38);
+      const hue = palette[i % palette.length];
+      nodes.push({
+        x: cx + Math.cos(angle) * radius,
+        y: cy + Math.sin(angle) * radius * (0.70 + Math.random() * 0.22),
+        vx: (Math.random() - 0.5) * 0.52,
+        vy: (Math.random() - 0.5) * 0.52,
+        size: 1.4 + Math.random() * 2.8,
+        orbit: 0.00055 + Math.random() * 0.0012,
+        angle,
+        anchor: 0.0010 + Math.random() * 0.0017,
+        hue,
+        depth: 0.78 + Math.random() * 0.55,
+        lane: (i % 6) + 1,
       });
-    };
+    }
+  };
 
-    const draw = () => {
-      ctx.clearRect(0, 0, width, height);
+  const resize = () => {
+    const rect = parent.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
+    cx = width * 0.5;
+    cy = height * 0.58;
+    safeRadius = Math.min(width, height) * (window.innerWidth < 760 ? 0.18 : 0.21);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seedNodes();
+  };
 
-      // atmosphere
-      const ambient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.45);
-      ambient.addColorStop(0, 'rgba(136,242,255,0.06)');
-      ambient.addColorStop(0.5, 'rgba(157,136,255,0.05)');
-      ambient.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = ambient;
-      ctx.fillRect(0, 0, width, height);
+  const updateNodes = () => {
+    const orbitBase = Math.min(width, height) * 0.32;
+    nodes.forEach((node, i) => {
+      node.angle += node.orbit;
+      const targetRadius = orbitBase * (0.90 + node.lane * 0.05 + (i / nodes.length) * 0.12);
+      const targetX = cx + Math.cos(node.angle + i * 0.11) * targetRadius;
+      const targetY = cy + Math.sin(node.angle + i * 0.09) * targetRadius * 0.68;
+      node.vx += (targetX - node.x) * node.anchor;
+      node.vy += (targetY - node.y) * node.anchor;
 
-      const maxLink = Math.min(width, height) * 0.22;
-      for (let i = 0; i < nodes.length; i += 1) {
-        for (let j = i + 1; j < nodes.length; j += 1) {
-          const a = nodes[i];
-          const b = nodes[j];
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > maxLink) continue;
-          const alpha = (1 - dist / maxLink) ** 1.9;
-          const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-          grad.addColorStop(0, `rgba(136,242,255,${0.02 + alpha * 0.22})`);
-          grad.addColorStop(0.45, `rgba(157,136,255,${0.02 + alpha * 0.16})`);
-          grad.addColorStop(1, `rgba(255,99,199,${0.01 + alpha * 0.12})`);
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
+      const centerDx = node.x - cx;
+      const centerDy = node.y - cy;
+      const centerDist = Math.hypot(centerDx, centerDy) || 1;
+      if (centerDist < safeRadius) {
+        const push = (safeRadius - centerDist) / safeRadius;
+        node.vx += (centerDx / centerDist) * push * 0.8;
+        node.vy += (centerDy / centerDist) * push * 0.8;
+      }
+
+      if (pointer.active) {
+        const dx = pointer.x - node.x;
+        const dy = pointer.y - node.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        if (dist < 120) {
+          const push = (120 - dist) / 120;
+          node.vx -= (dx / dist) * push * 0.42;
+          node.vy -= (dy / dist) * push * 0.42;
+        } else if (dist < 240) {
+          const pull = (240 - dist) / 240;
+          node.vx += (dx / dist) * pull * 0.024;
+          node.vy += (dy / dist) * pull * 0.024;
         }
       }
 
-      nodes.forEach((node) => {
-        const [solid, soft] = node.hue;
-        const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6.4);
-        glow.addColorStop(0, solid);
-        glow.addColorStop(0.24, soft);
-        glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size * 6.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = solid;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      node.vx *= 0.966;
+      node.vy *= 0.966;
+      node.x += node.vx * node.depth;
+      node.y += node.vy * node.depth;
+    });
+  };
 
-      // orbit strokes
-      ctx.save();
-      ctx.translate(cx, cy);
-      const t = performance.now() * 0.00008;
-      for (const [w, h, angle, color] of [
-        [width * 0.42, height * 0.20, t * 2.6, 'rgba(136,242,255,0.18)'],
-        [width * 0.34, height * 0.34, 0.6 + t * 2.0, 'rgba(157,136,255,0.16)'],
-        [width * 0.48, height * 0.26, -0.44 + t * 1.7, 'rgba(255,99,199,0.12)'],
-      ]) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.2;
+  const draw = () => {
+    ctx.clearRect(0, 0, width, height);
+
+    const ambient = ctx.createRadialGradient(cx, cy, safeRadius * 0.08, cx, cy, Math.min(width, height) * 0.52);
+    ambient.addColorStop(0, 'rgba(136,242,255,0.09)');
+    ambient.addColorStop(0.45, 'rgba(166,140,255,0.06)');
+    ambient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = ambient;
+    ctx.fillRect(0, 0, width, height);
+
+    const coreGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, safeRadius * 1.55);
+    coreGlow.addColorStop(0, 'rgba(255,255,255,0.06)');
+    coreGlow.addColorStop(0.36, 'rgba(136,242,255,0.08)');
+    coreGlow.addColorStop(0.74, 'rgba(166,140,255,0.04)');
+    coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = coreGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, safeRadius * 1.55, 0, Math.PI * 2);
+    ctx.fill();
+
+    const maxLink = Math.min(width, height) * 0.20;
+    for (let i = 0; i < nodes.length; i += 1) {
+      for (let j = i + 1; j < nodes.length; j += 1) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > maxLink) continue;
+        const alpha = (1 - dist / maxLink) ** 2.0;
+        const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        grad.addColorStop(0, `rgba(136,242,255,${0.015 + alpha * 0.18})`);
+        grad.addColorStop(0.48, `rgba(166,140,255,${0.015 + alpha * 0.16})`);
+        grad.addColorStop(1, `rgba(255,99,199,${0.012 + alpha * 0.10})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.ellipse(0, 0, w * 0.5, h * 0.5, angle, 0, Math.PI * 2);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
         ctx.stroke();
       }
-      ctx.restore();
-    };
+    }
 
-    const loop = () => {
-      updateNodes(performance.now());
-      draw();
-      raf = requestAnimationFrame(loop);
-    };
-
-    parent.addEventListener('pointermove', (event) => {
-      const rect = parent.getBoundingClientRect();
-      pointer.x = event.clientX - rect.left;
-      pointer.y = event.clientY - rect.top;
-      pointer.active = true;
-    });
-    parent.addEventListener('pointerleave', () => {
-      pointer.active = false;
-    });
-    parent.addEventListener('pointercancel', () => {
-      pointer.active = false;
+    nodes.forEach((node) => {
+      const [solid, soft] = node.hue;
+      const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6.2);
+      glow.addColorStop(0, solid);
+      glow.addColorStop(0.24, soft);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.size * 6.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = solid;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    resize();
-    window.addEventListener('resize', () => {
-      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      resize();
-    });
+    ctx.save();
+    ctx.translate(cx, cy);
+    const t = performance.now() * 0.00008;
+    for (const [w, h, angle, color] of [
+      [width * 0.44, height * 0.22, t * 2.4, 'rgba(136,242,255,0.14)'],
+      [width * 0.36, height * 0.34, 0.6 + t * 1.9, 'rgba(166,140,255,0.13)'],
+      [width * 0.50, height * 0.27, -0.44 + t * 1.5, 'rgba(255,99,199,0.08)'],
+    ]) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.15;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, w * 0.5, h * 0.5, angle, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+
+  const loop = () => {
+    updateNodes();
+    draw();
     raf = requestAnimationFrame(loop);
-  }
+  };
+
+  parent.addEventListener('pointermove', (event) => {
+    const rect = parent.getBoundingClientRect();
+    pointer.x = event.clientX - rect.left;
+    pointer.y = event.clientY - rect.top;
+    pointer.active = true;
+    parent.style.setProperty('--scene-x', `${(pointer.x / width * 100).toFixed(2)}%`);
+    parent.style.setProperty('--scene-y', `${(pointer.y / height * 100).toFixed(2)}%`);
+  });
+  parent.addEventListener('pointerleave', () => {
+    pointer.active = false;
+    parent.style.setProperty('--scene-x', '50%');
+    parent.style.setProperty('--scene-y', '56%');
+  });
+  parent.addEventListener('pointercancel', () => {
+    pointer.active = false;
+    parent.style.setProperty('--scene-x', '50%');
+    parent.style.setProperty('--scene-y', '56%');
+  });
+
+  resize();
+  window.addEventListener('resize', () => {
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    resize();
+  });
+  raf = requestAnimationFrame(loop);
+}
 })();
