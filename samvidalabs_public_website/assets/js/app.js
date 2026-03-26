@@ -347,3 +347,72 @@ if (canvas && !prefersReduced) {
   raf = requestAnimationFrame(loop);
 }
 })();
+
+
+(() => {
+  const topicCopy = {
+    'new-product': 'We help scope product strategy, UX, architecture, engineering, and launch readiness for AI-ready products.',
+    'enhancement': 'Samvida Labs can add intelligence, workflow automation, guidance, search, and operational uplift to products already in market.',
+    'industries': 'Current priority industries include EdTech, schools, medical, hospitals, marketing companies, ERP, and operations-focused businesses.',
+    'start': 'The fastest route is Monica intake: tell us whether this is a new product or an enhancement, share industry and timeline, and the right Samvida path can begin.'
+  };
+
+  const widget = document.querySelector('[data-monica-widget]');
+  if (widget) {
+    const toggle = widget.querySelector('[data-monica-toggle]');
+    const panel = widget.querySelector('[data-monica-panel]');
+    const close = widget.querySelector('[data-monica-close]');
+    const answer = widget.querySelector('[data-monica-answer]');
+    const topicButtons = [...widget.querySelectorAll('[data-monica-topic]')];
+
+    const openPanel = () => {
+      if (!panel || !toggle) return;
+      panel.hidden = false;
+      widget.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+    };
+    const closePanel = () => {
+      if (!panel || !toggle) return;
+      panel.hidden = true;
+      widget.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        if (panel.hidden) openPanel();
+        else closePanel();
+      });
+    }
+    if (close) close.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closePanel();
+    });
+    document.addEventListener('click', (event) => {
+      if (!widget.contains(event.target) && !panel.hidden) closePanel();
+    });
+    topicButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        topicButtons.forEach((node) => node.classList.remove('active'));
+        button.classList.add('active');
+        const key = button.getAttribute('data-monica-topic');
+        if (answer && topicCopy[key]) answer.textContent = topicCopy[key];
+      });
+    });
+  }
+
+  const serviceMap = {
+    'new-product': 'Product development with AI',
+    'enhancement': 'AI enhancements for existing products',
+    'website': 'Websites for business',
+    'general': 'General inquiry'
+  };
+  const params = new URLSearchParams(window.location.search);
+  const serviceParam = params.get('service');
+  if (serviceParam) {
+    document.querySelectorAll('[data-service-select]').forEach((select) => {
+      const mapped = serviceMap[serviceParam] || serviceParam;
+      const match = [...select.options].find((option) => option.value === mapped || option.text === mapped);
+      if (match) select.value = match.value;
+    });
+  }
+})();
