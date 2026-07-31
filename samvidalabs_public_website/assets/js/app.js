@@ -4,6 +4,12 @@
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDesktop = window.matchMedia('(min-width: 921px)').matches;
 
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute('content', '#f7f9fc');
+
+  const productsNavLabel = document.querySelector('[data-nav-link="products"] span');
+  if (productsNavLabel) productsNavLabel.textContent = 'Products';
+
   const yearNode = document.querySelector('[data-year]');
   if (yearNode) yearNode.textContent = new Date().getFullYear();
 
@@ -147,7 +153,7 @@ if (canvas && !prefersReduced) {
     ['rgba(136, 242, 255, 0.96)', 'rgba(136, 242, 255, 0.18)'],
     ['rgba(166, 140, 255, 0.94)', 'rgba(166, 140, 255, 0.18)'],
     ['rgba(255, 99, 199, 0.82)', 'rgba(255, 99, 199, 0.15)'],
-    ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.18)'],
+    ['rgba(9, 30, 58, 0.88)', 'rgba(9, 30, 58, 0.12)'],
   ];
   let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   let width = 0;
