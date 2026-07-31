@@ -49,8 +49,8 @@
         <span></span><span></span><span></span>
       </button>
       <nav class="main-nav" data-nav>
-        <a data-nav-link="home" class="" href="index.html"><span>Home</span></a><a data-nav-link="about" class="" href="about.html"><span>About</span></a><a data-nav-link="solutions" class="" href="solutions.html"><span>Solutions</span></a><a data-nav-link="products" class="" href="products.html"><span>Selected Work</span></a><a data-nav-link="careers" class="" href="careers.html"><span>Careers</span></a><a data-nav-link="contact" class="active" href="contact.html"><span>Contact</span></a><a data-nav-link="websites" class="" href="websites-for-business.html"><span>Websites for Business</span></a>
-        <a class="btn btn-primary btn-sm magnetic" data-magnetic="18" href="contact.html#monica"><span>Start a project</span></a>
+        <a data-nav-link="home" class="" href="index.html"><span>Home</span></a><a data-nav-link="about" class="" href="about.html"><span>About</span></a><a data-nav-link="solutions" class="" href="solutions.html"><span>Solutions</span></a><a data-nav-link="products" class="" href="products.html"><span>Products</span></a><a data-nav-link="careers" class="" href="careers.html"><span>Careers</span></a><a data-nav-link="contact" class="active" href="contact.html"><span>Contact</span></a>
+        <a class="btn btn-primary btn-sm magnetic" data-magnetic="18" href="contact.html#monica"><span>Start a product brief</span></a>
       </nav>
     </div>
   </div>
@@ -61,14 +61,14 @@
   <div class="container page-hero-grid">
     <div class="page-copy reveal-on-scroll">
       <span class="eyebrow">Contact</span>
-      <h1>Choose the fastest path to the right Samvida team.</h1>
-      <p class="lead">For new products, product upgrades, premium websites, or general business conversations, start with Monica or use the most relevant email route below.</p>
-      <div class="hero-chip-row"><span class="chip">Structured inquiry</span><span class="chip">Sales routing</span><span class="chip">No phone-first workflow</span></div>
+      <h1>Start with the product problem—not a service menu.</h1>
+      <p class="lead">Tell us what you are building, what is not working, and what a better outcome should look like. Monica, our project-intake assistant, structures the brief for the right product conversation.</p>
+      <div class="hero-chip-row"><span class="chip">Five-minute brief</span><span class="chip">One focused route</span><span class="chip">Direct email available</span></div>
     </div>
     <aside class="page-side panel reveal-on-scroll" data-tilt data-tilt-max="4">
-      <span class="eyebrow">Best first move</span>
-      <h3>Use Monica when you want a better-scoped first conversation.</h3>
-      <p>Monica helps qualify the need, capture the right project details, and point the brief toward the correct Samvida Labs path.</p>
+      <span class="eyebrow">What Monica does</span>
+      <h3>She is the intake layer, not a replacement for the product conversation.</h3>
+      <p>Monica captures the essentials, keeps optional commercial detail out of the way, and gives the Samvida Labs team a useful starting brief.</p>
     </aside>
   </div>
 </section>
@@ -83,9 +83,9 @@
       <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">How we prefer to start</span><h3>Structured briefs over phone-first inquiries</h3><p>This keeps discovery sharper and helps Samvida Labs route the conversation more intelligently from day one.</p></article>
     </div>
     <div class="form-shell reveal-on-scroll" data-tilt data-tilt-max="4" id="monica">
-      <span class="eyebrow">Monica intake</span>
-      <h2>Tell Monica what you need.</h2>
-      <p>Share a short brief so the right product, sales, or delivery conversation can begin with a clearer brief.</p>
+      <span class="eyebrow">Project intake</span>
+      <h2>Start your product brief.</h2>
+      <p>Share the current situation and the outcome you want. Only the essentials are required; timing, budget, and project stage are optional.</p>
       <form class="form-grid" name="contact-inquiry" method="POST" action="thank-you.html" data-netlify="true" netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="contact-inquiry">
         <p class="hidden-field"><label>Leave empty <input name="bot-field"></label></p>
@@ -101,47 +101,34 @@
             <option>General inquiry</option>
           </select>
         </div>
-        <div class="field"><label for="contact-industry">Industry</label>
-          <select id="contact-industry" name="industry">
-            <option value="">Select</option>
-            <option>EdTech</option>
-            <option>Schools</option>
-            <option>Medical</option>
-            <option>Hospitals</option>
-            <option>Marketing company</option>
-            <option>ERP</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field"><label for="contact-timeline">Timeline</label>
-          <select id="contact-timeline" name="timeline">
-            <option value="">Select</option>
-            <option>Immediately</option>
-            <option>Within 30 days</option>
-            <option>Within 90 days</option>
-            <option>Exploring options</option>
-          </select>
-        </div>
-        <div class="field"><label for="contact-budget">Budget range</label>
-          <select id="contact-budget" name="budget_range">
-            <option value="">Select</option>
-            <option>Under ₹5L</option>
-            <option>₹5L to ₹15L</option>
-            <option>₹15L to ₹50L</option>
-            <option>₹50L+</option>
-          </select>
-        </div>
-        <div class="field"><label for="contact-stage">Current stage</label>
-          <select id="contact-stage" name="project_stage">
-            <option value="">Select</option>
-            <option>Idea stage</option>
-            <option>Validation or scoping</option>
-            <option>Existing product in market</option>
-            <option>Need redesign and technical uplift</option>
-          </select>
-        </div>
-        <div class="field field-full"><label for="contact-message">Message</label><textarea id="contact-message" name="message" required></textarea></div>
-        <div class="field field-full"><button class="btn btn-primary magnetic" data-magnetic="18" type="submit"><span>Send inquiry</span></button></div>
+        <div class="field field-full"><label for="contact-message">What are you building or trying to improve?</label><textarea id="contact-message" name="message" placeholder="Describe the users, current workflow, what is not working, and the outcome you want." required></textarea></div>
+        <details class="form-optional field-full">
+          <summary>Add optional project details</summary>
+          <div class="form-optional-grid">
+            <div class="field"><label for="contact-industry">Industry</label>
+              <select id="contact-industry" name="industry">
+                <option value="">Select</option>
+                <option>EdTech</option><option>Schools</option><option>Medical</option><option>Hospitals</option><option>Marketing company</option><option>ERP</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="contact-timeline">Timeline</label>
+              <select id="contact-timeline" name="timeline">
+                <option value="">Select</option><option>Immediately</option><option>Within 30 days</option><option>Within 90 days</option><option>Exploring options</option>
+              </select>
+            </div>
+            <div class="field"><label for="contact-budget">Budget range</label>
+              <select id="contact-budget" name="budget_range">
+                <option value="">Select</option><option>Under ₹5L</option><option>₹5L to ₹15L</option><option>₹15L to ₹50L</option><option>₹50L+</option>
+              </select>
+            </div>
+            <div class="field"><label for="contact-stage">Current stage</label>
+              <select id="contact-stage" name="project_stage">
+                <option value="">Select</option><option>Idea stage</option><option>Validation or scoping</option><option>Existing product in market</option><option>Need redesign and technical uplift</option>
+              </select>
+            </div>
+          </div>
+        </details>
+        <div class="field field-full"><button class="btn btn-primary magnetic" data-magnetic="18" type="submit"><span>Send my product brief</span></button></div>
         <p class="field field-full form-terms-note">Submitting this form creates an inquiry only—not a payment obligation. If we proceed, the applicable proposal, statement of work, or invoice may incorporate our <a href="payment-terms.html">Payment Terms &amp; Commercial Conditions</a>.</p>
       </form>
     </div>
@@ -150,8 +137,8 @@
 
 <section class="section-block">
   <div class="container cards-3">
-    <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">What happens next</span><h3>Your inquiry gets routed by fit.</h3><p>New products, enhancement projects, and premium website requests are separated early so the right follow-up starts faster.</p></article>
-    <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">Discovery</span><h3>Expect a clearer first conversation.</h3><p>Because Monica captures the brief, the first interaction can focus on priorities instead of basic clarification.</p></article>
+    <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">What happens next</span><h3>Your brief is reviewed by fit.</h3><p>New products, modernisation work, and supporting website requests are separated early so the next conversation has a clear purpose.</p></article>
+    <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">Discovery</span><h3>Begin with the important questions.</h3><p>Because the essentials are already in the brief, the first interaction can focus on priorities, constraints, and the product path.</p></article>
     <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">Direct email</span><h3>Prefer not to use the form?</h3><p>You can write directly to <a href="mailto:sales@samvidalabs.com">sales@samvidalabs.com</a> for project conversations or <a href="mailto:info@samvidalabs.com">info@samvidalabs.com</a> for general questions.</p></article>
   </div>
 </section>
@@ -171,11 +158,11 @@
       <div class="footer-chips">
         <span class="chip">Product development with AI</span>
         <span class="chip">AI enhancements</span>
-        <span class="chip">Selected work</span>
+        <span class="chip">Products &amp; proof</span>
         <span class="chip">Business websites</span>
       </div>
       <div class="cta-row footer-cta-row">
-        <a class="btn btn-primary magnetic" data-magnetic="18" href="contact.html?service=new-product#monica"><span>Talk to Monica</span></a>
+        <a class="btn btn-primary magnetic" data-magnetic="18" href="contact.html#monica"><span>Start a product brief</span></a>
         <a class="btn btn-secondary magnetic" data-magnetic="18" href="solutions.html"><span>Explore services</span></a>
       </div>
     </div>
@@ -185,7 +172,7 @@
         <div class="footer-link-list footer-link-list-compact">
           <a href="contact.html?service=new-product#monica">Product development with AI</a>
           <a href="contact.html?service=enhancement#monica">AI enhancements for existing products</a>
-          <a href="products.html">Selected work</a>
+          <a href="products.html">Products &amp; proof</a>
           <a href="websites-for-business.html">Websites for Business</a>
         </div>
       </div>
@@ -270,7 +257,7 @@
       We help scope product strategy, UX, architecture, engineering, and launch readiness for AI-ready products.
     </div>
     <div class="monica-actions">
-      <a class="btn btn-primary btn-sm magnetic" data-magnetic="16" href="contact.html#monica"><span>Start with Monica</span></a>
+      <a class="btn btn-primary btn-sm magnetic" data-magnetic="16" href="contact.html#monica"><span>Start a product brief</span></a>
       <a class="btn btn-secondary btn-sm magnetic" data-magnetic="16" href="mailto:sales@samvidalabs.com"><span>Email sales</span></a>
     </div>
   </aside>
