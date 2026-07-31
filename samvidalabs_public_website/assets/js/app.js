@@ -145,16 +145,19 @@
   }
 
 const canvas = document.querySelector('[data-force-graph]');
-if (canvas && !prefersReduced) {
+if (canvas) {
   const parent = canvas.parentElement;
   const ctx = canvas.getContext('2d');
   const nodes = [];
+  const links = [];
   const palette = [
-    ['rgba(136, 242, 255, 0.96)', 'rgba(136, 242, 255, 0.18)'],
-    ['rgba(166, 140, 255, 0.94)', 'rgba(166, 140, 255, 0.18)'],
-    ['rgba(255, 99, 199, 0.82)', 'rgba(255, 99, 199, 0.15)'],
-    ['rgba(9, 30, 58, 0.88)', 'rgba(9, 30, 58, 0.12)'],
+    { rgb: '10, 145, 181', solid: 'rgba(10, 145, 181, 0.98)', soft: 'rgba(10, 145, 181, 0.20)' },
+    { rgb: '92, 74, 222', solid: 'rgba(92, 74, 222, 0.96)', soft: 'rgba(92, 74, 222, 0.18)' },
+    { rgb: '202, 58, 164', solid: 'rgba(202, 58, 164, 0.92)', soft: 'rgba(202, 58, 164, 0.17)' },
+    { rgb: '17, 53, 91', solid: 'rgba(17, 53, 91, 0.96)', soft: 'rgba(17, 53, 91, 0.16)' },
+    { rgb: '23, 180, 172', solid: 'rgba(23, 180, 172, 0.96)', soft: 'rgba(23, 180, 172, 0.18)' },
   ];
+  const clusterAngles = [-2.62, -1.38, -0.18, 1.04, 2.28];
   let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   let width = 0;
   let height = 0;
@@ -163,29 +166,65 @@ if (canvas && !prefersReduced) {
   let safeRadius = 0;
   let raf = null;
   const pointer = { x: 0, y: 0, active: false };
-  const nodeCount = window.innerWidth < 760 ? 24 : 36;
+
+  const createRandom = (seed) => () => {
+    seed |= 0;
+    seed = seed + 0x6D2B79F5 | 0;
+    let value = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    value = value + Math.imul(value ^ value >>> 7, 61 | value) ^ value;
+    return ((value ^ value >>> 14) >>> 0) / 4294967296;
+  };
 
   const seedNodes = () => {
     nodes.length = 0;
-    const base = Math.min(width, height) * 0.32;
+    links.length = 0;
+    const compact = width < 560;
+    const nodeCount = compact ? 18 : 28;
+    const base = Math.min(width, height) * (compact ? 0.34 : 0.35);
+    const random = createRandom(compact ? 2407 : 8173);
+
     for (let i = 0; i < nodeCount; i += 1) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = base * (0.92 + Math.random() * 0.38);
-      const hue = palette[i % palette.length];
+      const primary = i < 5;
+      const cluster = primary ? i : (i - 5) % 5;
+      const rank = primary ? 0 : Math.floor((i - 5) / 5) + 1;
+      const angle = clusterAngles[cluster] + rank * 0.08 + (random() - 0.5) * (primary ? 0.10 : 0.42);
+      const radius = base * (primary ? 0.86 : 0.94 + rank * 0.11 + random() * 0.08);
+      const hue = palette[cluster];
       nodes.push({
         x: cx + Math.cos(angle) * radius,
-        y: cy + Math.sin(angle) * radius * (0.70 + Math.random() * 0.22),
-        vx: (Math.random() - 0.5) * 0.52,
-        vy: (Math.random() - 0.5) * 0.52,
-        size: 1.4 + Math.random() * 2.8,
-        orbit: 0.00055 + Math.random() * 0.0012,
+        y: cy + Math.sin(angle) * radius * 0.70,
+        vx: 0,
+        vy: 0,
+        size: primary ? 4.6 : 1.9 + random() * 2.1,
+        orbit: (0.00012 + random() * 0.00022) * (cluster % 2 ? -1 : 1),
         angle,
-        anchor: 0.0010 + Math.random() * 0.0017,
+        targetRadius: radius,
+        anchor: primary ? 0.0026 : 0.0018 + random() * 0.0008,
         hue,
-        depth: 0.78 + Math.random() * 0.55,
-        lane: (i % 6) + 1,
+        depth: 0.86 + random() * 0.28,
+        cluster,
+        primary,
       });
     }
+
+    for (let i = 0; i < 5; i += 1) {
+      links.push({ from: i, to: (i + 1) % 5, weight: 1, kind: 'hub' });
+    }
+    links.push(
+      { from: 0, to: 2, weight: 0.76, kind: 'cross' },
+      { from: 1, to: 3, weight: 0.72, kind: 'cross' },
+      { from: 2, to: 4, weight: 0.68, kind: 'cross' },
+    );
+    for (let i = 5; i < nodes.length; i += 1) {
+      const cluster = nodes[i].cluster;
+      links.push({ from: cluster, to: i, weight: 0.82, kind: 'branch' });
+      const previous = i - 5;
+      if (previous >= 5) links.push({ from: previous, to: i, weight: 0.52, kind: 'branch' });
+    }
+
+    canvas.dataset.graphNodes = String(nodes.length);
+    canvas.dataset.graphLinks = String(links.length);
+    canvas.classList.add('is-ready');
   };
 
   const resize = () => {
@@ -193,8 +232,8 @@ if (canvas && !prefersReduced) {
     width = rect.width;
     height = rect.height;
     cx = width * 0.5;
-    cy = height * 0.58;
-    safeRadius = Math.min(width, height) * (window.innerWidth < 760 ? 0.18 : 0.21);
+    cy = height * 0.56;
+    safeRadius = Math.min(width, height) * (width < 560 ? 0.16 : 0.18);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     canvas.style.width = `${width}px`;
@@ -204,12 +243,10 @@ if (canvas && !prefersReduced) {
   };
 
   const updateNodes = () => {
-    const orbitBase = Math.min(width, height) * 0.32;
-    nodes.forEach((node, i) => {
+    nodes.forEach((node) => {
       node.angle += node.orbit;
-      const targetRadius = orbitBase * (0.90 + node.lane * 0.05 + (i / nodes.length) * 0.12);
-      const targetX = cx + Math.cos(node.angle + i * 0.11) * targetRadius;
-      const targetY = cy + Math.sin(node.angle + i * 0.09) * targetRadius * 0.68;
+      const targetX = cx + Math.cos(node.angle) * node.targetRadius;
+      const targetY = cy + Math.sin(node.angle) * node.targetRadius * 0.70;
       node.vx += (targetX - node.x) * node.anchor;
       node.vy += (targetY - node.y) * node.anchor;
 
@@ -237,6 +274,40 @@ if (canvas && !prefersReduced) {
         }
       }
 
+      const chatBoundaryX = width * 0.78;
+      const chatBoundaryY = height * 0.73;
+      if (node.x > chatBoundaryX && node.y > chatBoundaryY) {
+        node.vx -= (node.x - chatBoundaryX) * 0.006;
+        node.vy -= (node.y - chatBoundaryY) * 0.004;
+      }
+
+      const padding = 22 + node.size * 2;
+      if (node.x < padding) node.vx += (padding - node.x) * 0.018;
+      if (node.x > width - padding) node.vx -= (node.x - width + padding) * 0.018;
+      if (node.y < padding) node.vy += (padding - node.y) * 0.018;
+      if (node.y > height - padding) node.vy -= (node.y - height + padding) * 0.018;
+    });
+
+    for (let i = 0; i < nodes.length; i += 1) {
+      for (let j = i + 1; j < nodes.length; j += 1) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const minGap = 22 + a.size + b.size;
+        if (dist >= minGap) continue;
+        const push = (minGap - dist) / minGap * 0.035;
+        const px = dx / dist * push;
+        const py = dy / dist * push;
+        a.vx -= px;
+        a.vy -= py;
+        b.vx += px;
+        b.vy += py;
+      }
+    }
+
+    nodes.forEach((node) => {
       node.vx *= 0.966;
       node.vy *= 0.966;
       node.x += node.vx * node.depth;
@@ -247,77 +318,90 @@ if (canvas && !prefersReduced) {
   const draw = () => {
     ctx.clearRect(0, 0, width, height);
 
-    const ambient = ctx.createRadialGradient(cx, cy, safeRadius * 0.08, cx, cy, Math.min(width, height) * 0.52);
-    ambient.addColorStop(0, 'rgba(136,242,255,0.09)');
-    ambient.addColorStop(0.45, 'rgba(166,140,255,0.06)');
+    const ambient = ctx.createRadialGradient(cx, cy, safeRadius * 0.08, cx, cy, Math.min(width, height) * 0.54);
+    ambient.addColorStop(0, 'rgba(8,174,202,0.08)');
+    ambient.addColorStop(0.48, 'rgba(112,92,245,0.055)');
     ambient.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = ambient;
     ctx.fillRect(0, 0, width, height);
 
     const coreGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, safeRadius * 1.55);
-    coreGlow.addColorStop(0, 'rgba(255,255,255,0.06)');
-    coreGlow.addColorStop(0.36, 'rgba(136,242,255,0.08)');
-    coreGlow.addColorStop(0.74, 'rgba(166,140,255,0.04)');
+    coreGlow.addColorStop(0, 'rgba(255,255,255,0.11)');
+    coreGlow.addColorStop(0.36, 'rgba(8,174,202,0.075)');
+    coreGlow.addColorStop(0.74, 'rgba(112,92,245,0.04)');
     coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = coreGlow;
     ctx.beginPath();
     ctx.arc(cx, cy, safeRadius * 1.55, 0, Math.PI * 2);
     ctx.fill();
 
-    const maxLink = Math.min(width, height) * 0.20;
-    for (let i = 0; i < nodes.length; i += 1) {
-      for (let j = i + 1; j < nodes.length; j += 1) {
-        const a = nodes[i];
-        const b = nodes[j];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist > maxLink) continue;
-        const alpha = (1 - dist / maxLink) ** 2.0;
-        const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-        grad.addColorStop(0, `rgba(136,242,255,${0.015 + alpha * 0.18})`);
-        grad.addColorStop(0.48, `rgba(166,140,255,${0.015 + alpha * 0.16})`);
-        grad.addColorStop(1, `rgba(255,99,199,${0.012 + alpha * 0.10})`);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-      }
-    }
+    ctx.save();
+    ctx.lineCap = 'round';
+    nodes.slice(0, 5).forEach((node) => {
+      const dx = node.x - cx;
+      const dy = node.y - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      const startX = cx + dx / dist * (safeRadius + 8);
+      const startY = cy + dy / dist * (safeRadius + 8);
+      const spoke = ctx.createLinearGradient(startX, startY, node.x, node.y);
+      spoke.addColorStop(0, 'rgba(17,53,91,0.025)');
+      spoke.addColorStop(1, `rgba(${node.hue.rgb},0.24)`);
+      ctx.strokeStyle = spoke;
+      ctx.lineWidth = 1.05;
+      ctx.setLineDash([3, 6]);
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(node.x, node.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    links.forEach((link) => {
+      const a = nodes[link.from];
+      const b = nodes[link.to];
+      if (!a || !b) return;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const curve = ((link.from + link.to) % 2 ? 1 : -1) * Math.min(18, dist * 0.05);
+      const controlX = (a.x + b.x) * 0.5 - dy / dist * curve;
+      const controlY = (a.y + b.y) * 0.5 + dx / dist * curve;
+      const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+      const alpha = link.kind === 'hub' ? 0.30 : link.kind === 'cross' ? 0.20 : 0.18;
+      grad.addColorStop(0, `rgba(${a.hue.rgb},${alpha * link.weight})`);
+      grad.addColorStop(1, `rgba(${b.hue.rgb},${alpha * link.weight})`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = link.kind === 'hub' ? 1.45 : 1.05;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo(controlX, controlY, b.x, b.y);
+      ctx.stroke();
+    });
+    ctx.restore();
 
     nodes.forEach((node) => {
-      const [solid, soft] = node.hue;
-      const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 6.2);
-      glow.addColorStop(0, solid);
-      glow.addColorStop(0.24, soft);
+      const glowRadius = node.size * (node.primary ? 4.2 : 3.3);
+      const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowRadius);
+      glow.addColorStop(0, node.hue.solid);
+      glow.addColorStop(0.30, node.hue.soft);
       glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
-      ctx.arc(node.x, node.y, node.size * 6.2, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = solid;
+      ctx.fillStyle = node.hue.solid;
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
       ctx.fill();
+      if (node.primary) {
+        const pulse = prefersReduced ? 0 : Math.sin(performance.now() * 0.0015 + node.cluster) * 0.7;
+        ctx.strokeStyle = `rgba(${node.hue.rgb},0.26)`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.size + 4 + pulse, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     });
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    const t = performance.now() * 0.00008;
-    for (const [w, h, angle, color] of [
-      [width * 0.44, height * 0.22, t * 2.4, 'rgba(136,242,255,0.14)'],
-      [width * 0.36, height * 0.34, 0.6 + t * 1.9, 'rgba(166,140,255,0.13)'],
-      [width * 0.50, height * 0.27, -0.44 + t * 1.5, 'rgba(255,99,199,0.08)'],
-    ]) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.15;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, w * 0.5, h * 0.5, angle, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
   };
 
   const loop = () => {
@@ -349,8 +433,13 @@ if (canvas && !prefersReduced) {
   window.addEventListener('resize', () => {
     dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     resize();
+    if (prefersReduced) draw();
   });
-  raf = requestAnimationFrame(loop);
+  if (prefersReduced) {
+    draw();
+  } else {
+    raf = requestAnimationFrame(loop);
+  }
 }
 })();
 
