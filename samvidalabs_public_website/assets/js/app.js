@@ -481,6 +481,12 @@ if (canvas) {
       });
     });
   });
+
+  if (document.body.dataset.page === 'thank-you') {
+    publishConversion('contact_brief_received', {
+      form_name: 'contact-inquiry'
+    });
+  }
 })();
 
 
