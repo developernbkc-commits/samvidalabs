@@ -86,7 +86,7 @@
       <span class="eyebrow">Project intake</span>
       <h2>Start your product brief.</h2>
       <p>Share the current situation and the outcome you want. Only the essentials are required; timing, budget, and project stage are optional.</p>
-      <form class="form-grid" name="contact-inquiry" method="POST" action="thank-you.html" data-netlify="true" data-track-form="contact_product_brief" netlify-honeypot="bot-field">
+      <form class="form-grid" name="contact-inquiry" method="POST" action="thank-you.html" data-netlify="true" data-track-form="contact_product_brief" netlify-honeypot="bot-field" aria-describedby="contact-privacy-note">
         <input type="hidden" name="form-name" value="contact-inquiry">
         <p class="hidden-field"><label>Leave empty <input name="bot-field"></label></p>
         <div class="field"><label for="contact-name">Name</label><input id="contact-name" name="name" type="text" required></div>
@@ -129,7 +129,7 @@
           </div>
         </details>
         <div class="field field-full"><button class="btn btn-primary magnetic" data-magnetic="18" type="submit"><span>Send my product brief</span></button></div>
-        <p class="field field-full form-terms-note">Submitting this form creates an inquiry only—not a payment obligation. If we proceed, the applicable proposal, statement of work, or invoice may incorporate our <a href="payment-terms.html">Payment Terms &amp; Commercial Conditions</a>.</p>
+        <p class="field field-full form-terms-note" id="contact-privacy-note">By submitting, you ask Samvida Labs to use this information to review and respond to your inquiry as described in our <a href="privacy.html" data-track="contact_privacy_notice">Privacy Notice</a>. This creates no payment obligation. If we proceed, the applicable proposal, statement of work, or invoice may incorporate our <a href="payment-terms.html">Payment Terms &amp; Commercial Conditions</a>.</p>
       </form>
     </div>
   </div>
@@ -222,6 +222,7 @@
   <div class="container footer-bottom">
     <p>© <span data-year></span> Samvida Labs. All rights reserved.</p>
     <div class="footer-bottom-links">
+      <a href="privacy.html">Privacy</a>
       <a href="payment-terms.html">Payment terms</a>
       <a href="sitemap.html">Sitemap</a>
       <a href="#top">Back to top</a>

@@ -1958,6 +1958,8 @@ label{color:var(--text-soft)}
 }
 .legal-contact a{color:#08748a;font-weight:800}
 .legal-contact a:hover{text-decoration:underline}
+.legal-clause a,.legal-callout a{color:#08748a;font-weight:800}
+.legal-clause a:hover,.legal-callout a:hover{text-decoration:underline}
 .form-terms-note{
   margin:0;
   color:var(--muted);
