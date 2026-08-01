@@ -2257,6 +2257,104 @@ html{scroll-padding-top:130px}
     linear-gradient(180deg,rgba(255,255,255,.96),rgba(239,249,246,.88));
 }
 
+/* ===== buyer decision routes ===== */
+#start-route{scroll-margin-top:130px}
+.decision-route-section{padding-top:clamp(4.5rem,7vw,7rem)}
+.decision-route-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;
+}
+.decision-route-card{
+  position:relative;
+  display:grid;
+  align-content:start;
+  gap:.9rem;
+  min-height:360px;
+  padding:clamp(1.35rem,3vw,2rem);
+  overflow:hidden;
+  border:1px solid rgba(17,53,91,.10);
+  border-radius:26px;
+  background:
+    radial-gradient(24rem 18rem at 100% 0%,rgba(8,174,202,.10),transparent 58%),
+    linear-gradient(180deg,rgba(255,255,255,.97),rgba(240,247,251,.9));
+  box-shadow:0 24px 58px rgba(24,57,91,.09),inset 0 1px 0 #fff;
+  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+.decision-route-card::after{
+  content:"";
+  position:absolute;
+  right:-14%;
+  bottom:-28%;
+  width:210px;
+  height:210px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(90,98,238,.10),transparent 68%);
+  pointer-events:none;
+}
+.decision-route-card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(8,174,202,.24);
+  box-shadow:0 30px 65px rgba(24,57,91,.13),inset 0 1px 0 #fff;
+}
+.decision-route-card-support{
+  background:
+    radial-gradient(24rem 18rem at 100% 0%,rgba(246,168,72,.12),transparent 58%),
+    linear-gradient(180deg,rgba(255,255,255,.97),rgba(249,246,239,.9));
+}
+.decision-route-index{
+  position:absolute;
+  top:1.25rem;
+  right:1.35rem;
+  color:rgba(8,105,128,.42);
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.decision-route-card h3{max-width:25ch;font-size:clamp(1.35rem,2.2vw,1.9rem)}
+.decision-route-card > p{max-width:62ch;color:var(--text-soft);line-height:1.68}
+.decision-route-card > .text-link{position:relative;z-index:1;margin-top:auto;justify-self:start}
+.decision-route-focus{
+  display:grid;
+  gap:.35rem;
+  padding:.95rem 1rem;
+  border:1px solid rgba(17,53,91,.09);
+  border-radius:17px;
+  background:rgba(255,255,255,.68);
+}
+.decision-route-focus strong{color:#0b6980;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+.decision-route-focus span{color:var(--text-soft);font-size:.86rem;line-height:1.58}
+.decision-route-boundary{
+  margin-top:1rem;
+  padding:1rem 1.1rem;
+  border:1px solid rgba(8,174,202,.14);
+  border-radius:18px;
+  color:var(--text-soft);
+  background:linear-gradient(135deg,rgba(237,249,251,.88),rgba(245,244,255,.82));
+  font-size:.88rem;
+  line-height:1.64;
+}
+.decision-route-boundary strong{color:#0b6980}
+.decision-route-boundary a{color:#08748a;font-weight:850}
+.decision-route-boundary a:hover{text-decoration:underline}
+.route-context{
+  display:grid;
+  gap:.35rem;
+  margin:1rem 0 1.2rem;
+  padding:1rem 1.05rem;
+  border:1px solid rgba(8,174,202,.18);
+  border-radius:18px;
+  background:
+    radial-gradient(18rem 10rem at 100% 0%,rgba(111,91,245,.10),transparent 62%),
+    linear-gradient(135deg,rgba(235,249,251,.94),rgba(246,245,255,.9));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+}
+.route-context[hidden]{display:none}
+.route-context > span{color:#08748a;font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.route-context > strong{font-size:1.03rem;line-height:1.35}
+.route-context > p{margin:0;color:var(--text-soft);font-size:.88rem;line-height:1.58}
+.route-context > small{color:#58708a;font-size:.72rem;line-height:1.5}
+
 @media (max-width: 1040px){
   .blueprint-shell{grid-template-columns:1fr}
   .blueprint-intro h2{max-width:18ch}
@@ -2271,7 +2369,7 @@ html{scroll-padding-top:130px}
   .monica-fab{width:48px;height:48px;padding:7px;justify-content:center;border-radius:50%}
   .monica-fab > span:not(.monica-fab-mark){display:none}
   .proof-dossier-hero .page-copy h1{max-width:none;font-size:clamp(2.65rem,12vw,3.2rem);line-height:.98}
-  .evidence-link-grid,.blueprint-steps,.proof-boundary-grid{grid-template-columns:1fr}
-  .evidence-link-card,.proof-decision-grid .card,.blueprint-steps li{min-height:0}
+  .evidence-link-grid,.blueprint-steps,.proof-boundary-grid,.decision-route-grid{grid-template-columns:1fr}
+  .evidence-link-card,.proof-decision-grid .card,.blueprint-steps li,.decision-route-card{min-height:0}
   .blueprint-shell{padding:1.25rem}
 }

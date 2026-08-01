@@ -547,6 +547,28 @@ if (canvas) {
     'website': 'Websites for business',
     'general': 'General inquiry'
   };
+  const routeMap = {
+    'product-direction': {
+      value: 'product-direction',
+      label: 'Product direction',
+      copy: 'Frame the users, operating outcome, first credible workflow, dependencies, and what should wait.'
+    },
+    'modernisation-review': {
+      value: 'modernisation-review',
+      label: 'Modernisation review',
+      copy: 'Surface the highest-friction path, technical constraints, operating risk, and viable uplift options.'
+    },
+    'workflow-slice': {
+      value: 'workflow-slice',
+      label: 'Controlled workflow slice',
+      copy: 'Trace one end-to-end workflow through actors, decisions, denied paths, recovery, evidence, and completion.'
+    },
+    'website-signal': {
+      value: 'website-signal',
+      label: 'Website signal upgrade',
+      copy: 'Clarify positioning, proof, trust boundaries, inquiry routing, content ownership, and launch dependencies.'
+    }
+  };
   const params = new URLSearchParams(window.location.search);
   const serviceParam = params.get('service');
   if (serviceParam) {
@@ -555,5 +577,22 @@ if (canvas) {
       const match = [...select.options].find((option) => option.value === mapped || option.text === mapped);
       if (match) select.value = match.value;
     });
+  }
+  const routeParam = params.get('route');
+  if (routeParam) {
+    const route = routeMap[routeParam];
+    document.querySelectorAll('[data-route-select]').forEach((select) => {
+      const mapped = route?.value || routeParam;
+      const match = [...select.options].find((option) => option.value === mapped);
+      if (match) select.value = match.value;
+    });
+    const context = document.querySelector('[data-route-context]');
+    if (context && route) {
+      const title = context.querySelector('[data-route-context-title]');
+      const copy = context.querySelector('[data-route-context-copy]');
+      if (title) title.textContent = route.label;
+      if (copy) copy.textContent = route.copy;
+      context.hidden = false;
+    }
   }
 })();

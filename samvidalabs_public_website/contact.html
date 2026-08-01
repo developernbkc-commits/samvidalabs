@@ -86,6 +86,12 @@
       <span class="eyebrow">Project intake</span>
       <h2>Start your product brief.</h2>
       <p>Share the current situation and the outcome you want. Only the essentials are required; timing, budget, and project stage are optional.</p>
+      <div class="route-context" data-route-context hidden aria-live="polite">
+        <span>Selected starting route</span>
+        <strong data-route-context-title></strong>
+        <p data-route-context-copy></p>
+        <small>Routing context only. Scope, timing, fees, and delivery remain subject to a written agreement.</small>
+      </div>
       <form class="form-grid" name="contact-inquiry" method="POST" action="thank-you.html" data-netlify="true" data-track-form="contact_product_brief" netlify-honeypot="bot-field" aria-describedby="contact-privacy-note">
         <input type="hidden" name="form-name" value="contact-inquiry">
         <p class="hidden-field"><label>Leave empty <input name="bot-field"></label></p>
@@ -105,6 +111,15 @@
         <details class="form-optional field-full">
           <summary>Add optional project details</summary>
           <div class="form-optional-grid">
+            <div class="field"><label for="contact-route">Starting route</label>
+              <select id="contact-route" name="starting_route" data-route-select>
+                <option value="">Not sure yet</option>
+                <option value="product-direction">Product direction</option>
+                <option value="modernisation-review">Modernisation review</option>
+                <option value="workflow-slice">Controlled workflow slice</option>
+                <option value="website-signal">Website signal upgrade</option>
+              </select>
+            </div>
             <div class="field"><label for="contact-industry">Industry</label>
               <select id="contact-industry" name="industry">
                 <option value="">Select</option>
@@ -140,6 +155,9 @@
     <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">What happens next</span><h3>Your brief is reviewed by fit.</h3><p>New products, modernisation work, and supporting website requests are separated early so the next conversation has a clear purpose.</p></article>
     <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">Discovery</span><h3>Begin with the important questions.</h3><p>Because the essentials are already in the brief, the first interaction can focus on priorities, constraints, and the product path.</p></article>
     <article class="card reveal-on-scroll" data-tilt data-tilt-max="5"><span class="eyebrow">Direct email</span><h3>Prefer not to use the form?</h3><p>You can write directly to <a href="mailto:sales@samvidalabs.com">sales@samvidalabs.com</a> for project conversations or <a href="mailto:info@samvidalabs.com">info@samvidalabs.com</a> for general questions.</p></article>
+  </div>
+  <div class="container mt-2">
+    <div class="decision-route-boundary reveal-on-scroll"><strong>Not sure which route fits?</strong> Compare the <a href="solutions.html#start-route" data-track="contact_compare_routes">four starting routes</a>. Selecting one helps route the inquiry; it does not create a quote, fixed scope, payment obligation, or delivery commitment.</div>
   </div>
 </section>
 
