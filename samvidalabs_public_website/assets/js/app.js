@@ -443,13 +443,53 @@ if (canvas) {
 }
 })();
 
+(() => {
+  const assignTrack = (selector, conversionName) => {
+    document.querySelectorAll(selector).forEach((node) => {
+      if (!node.hasAttribute('data-track')) node.setAttribute('data-track', conversionName);
+    });
+  };
+  assignTrack('.main-nav .btn[href*="#monica"]', 'header_product_brief');
+  assignTrack('.footer-cta-row .btn-primary[href*="#monica"]', 'footer_product_brief');
+  assignTrack('.monica-actions .btn-primary[href*="#monica"]', 'monica_product_brief');
+
+  const publishConversion = (conversionName, metadata = {}) => {
+    if (!conversionName) return;
+    const detail = {
+      event: 'samvida_conversion',
+      conversion_name: conversionName,
+      page_path: window.location.pathname,
+      ...metadata
+    };
+    if (Array.isArray(window.dataLayer)) window.dataLayer.push(detail);
+    window.dispatchEvent(new CustomEvent('samvida:conversion', { detail }));
+  };
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const target = event.target.closest('[data-track]');
+    if (!target) return;
+    publishConversion(target.getAttribute('data-track'), {
+      destination: target.getAttribute('href') || undefined
+    });
+  });
+
+  document.querySelectorAll('form[data-track-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      publishConversion(form.getAttribute('data-track-form'), {
+        form_name: form.getAttribute('name') || undefined
+      });
+    });
+  });
+})();
+
 
 (() => {
   const topicCopy = {
     'new-product': 'We help scope product strategy, UX, architecture, engineering, and launch readiness for AI-ready products.',
     'enhancement': 'Samvida Labs can add intelligence, workflow automation, guidance, search, and operational uplift to products already in market.',
     'industries': 'Current priority industries include EdTech, schools, medical, hospitals, marketing companies, ERP, and operations-focused businesses.',
-    'start': 'The fastest route is Monica intake: tell us whether this is a new product or an enhancement, share industry and timeline, and the right Samvida path can begin.'
+    'start': 'Start with the users, the current product or workflow problem, and the outcome you want. Timeline, budget, industry, and project stage are optional context.'
   };
 
   const widget = document.querySelector('[data-monica-widget]');

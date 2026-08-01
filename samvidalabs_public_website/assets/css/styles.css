@@ -1981,7 +1981,7 @@ label{color:var(--text-soft)}
 
 /* ===== sales narrative and conversion path ===== */
 html{scroll-padding-top:130px}
-#monica,#bharatcampus-one{scroll-margin-top:130px}
+#monica,#bharatcampus-one,#fit,#faq{scroll-margin-top:130px}
 .contact-cards h3 a{font-size:clamp(1rem,1.25vw,1.24rem);overflow-wrap:anywhere}
 .hero-proof-strip{
   display:grid;
@@ -2038,6 +2038,48 @@ html{scroll-padding-top:130px}
   border-style:dashed;
   background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(246,249,252,.72));
 }
+.sales-fit-grid .panel h3{margin-top:.55rem}
+.sales-fit-grid .list-clean{margin-top:1.15rem}
+.fit-boundary-card{
+  background:
+    radial-gradient(22rem 14rem at 88% 10%,rgba(112,92,245,.055),transparent 48%),
+    linear-gradient(180deg,rgba(255,255,255,.94),rgba(246,247,252,.88));
+}
+.faq-grid{display:grid;gap:.8rem;max-width:1040px}
+.faq-item{padding:0;min-height:0;overflow:hidden}
+.faq-item summary{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1.2rem 1.3rem;
+  color:var(--text);
+  font-size:clamp(1rem,1.45vw,1.18rem);
+  font-weight:850;
+  letter-spacing:-.02em;
+  cursor:pointer;
+  list-style:none;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{
+  content:"+";
+  flex:0 0 34px;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border:1px solid rgba(8,174,202,.16);
+  border-radius:50%;
+  color:#08748a;
+  background:rgba(231,249,251,.76);
+  font-size:1.15rem;
+}
+.faq-item[open] summary::after{content:"−"}
+.faq-item p{position:relative;z-index:2;max-width:82ch;padding:0 1.3rem 1.35rem;line-height:1.72}
+.faq-item p a{color:#08748a;font-weight:800}
+.faq-item p a:hover{text-decoration:underline}
 
 .form-optional{
   padding:.15rem 1rem 1rem;
