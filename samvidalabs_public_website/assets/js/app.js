@@ -3,6 +3,7 @@
   const root = document.documentElement;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDesktop = window.matchMedia('(min-width: 921px)').matches;
+  root.classList.add('spatial-ui');
 
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.setAttribute('content', '#f7f9fc');
@@ -13,12 +14,25 @@
   const yearNode = document.querySelector('[data-year]');
   if (yearNode) yearNode.textContent = new Date().getFullYear();
 
+  const spatialSurfaces = [...document.querySelectorAll([
+    '.panel', '.card', '.bento-card', '.form-shell', '.proof-card', '.cta-band',
+    '.stat-card', '.highlight-band', '.not-found-card', '.ticker-shell',
+    '.showcase-card', '.decision-route-card', '.evidence-link-card',
+    '.blueprint-shell', '.product-command-visual', '.hero-product-link', '.command-window',
+  ].join(','))];
+  spatialSurfaces.forEach((node, index) => {
+    node.classList.add('spatial-surface');
+    node.dataset.depthLevel = String((index % 3) + 1);
+  });
+
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('[data-progress]');
   const updateProgress = () => {
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
     const ratio = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
     if (progress) progress.style.width = `${ratio * 100}%`;
+    root.style.setProperty('--scroll-ratio', ratio.toFixed(4));
+    root.style.setProperty('--scroll-depth', `${Math.min(42, window.scrollY * 0.022).toFixed(2)}px`);
     if (header) header.classList.toggle('is-scrolled', window.scrollY > 18);
   };
   updateProgress();
@@ -29,6 +43,12 @@
   const updatePointer = (event) => {
     root.style.setProperty('--mx', `${event.clientX}px`);
     root.style.setProperty('--my', `${event.clientY}px`);
+    const nx = event.clientX / Math.max(1, window.innerWidth) - 0.5;
+    const ny = event.clientY / Math.max(1, window.innerHeight) - 0.5;
+    root.style.setProperty('--parallax-x', `${(nx * -18).toFixed(2)}px`);
+    root.style.setProperty('--parallax-y', `${(ny * -12).toFixed(2)}px`);
+    root.style.setProperty('--chrome-x', `${(nx * 6.3).toFixed(2)}px`);
+    root.style.setProperty('--chrome-y', `${(ny * 4.2).toFixed(2)}px`);
     document.body.classList.add('pointer-active');
     if (cursorHalo && !prefersReduced) {
       cursorHalo.style.left = `${event.clientX}px`;
@@ -128,6 +148,8 @@
       const reset = () => {
         node.style.setProperty('--scene-x', '50%');
         node.style.setProperty('--scene-y', '56%');
+        node.style.setProperty('--scene-rx', '1.1deg');
+        node.style.setProperty('--scene-ry', '-2.8deg');
       };
       node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
@@ -137,6 +159,8 @@
         const sy = 50 + py * 12;
         node.style.setProperty('--scene-x', `${sx.toFixed(2)}%`);
         node.style.setProperty('--scene-y', `${sy.toFixed(2)}%`);
+        node.style.setProperty('--scene-rx', `${((0.5 - py) * 4.2).toFixed(2)}deg`);
+        node.style.setProperty('--scene-ry', `${((px - 0.5) * 6.2).toFixed(2)}deg`);
       });
       node.addEventListener('pointerleave', reset);
       node.addEventListener('pointercancel', reset);
