@@ -25,6 +25,39 @@
     node.dataset.depthLevel = String((index % 3) + 1);
   });
 
+  const narrativeSections = [...document.querySelectorAll('main > section')];
+  narrativeSections.forEach((section, index) => {
+    const sectionIndex = String(index + 1).padStart(2, '0');
+    section.dataset.sectionIndex = sectionIndex;
+    section.querySelector('.section-head')?.setAttribute('data-section-index', sectionIndex);
+  });
+
+  const updateSectionDepth = () => {
+    if (prefersReduced || !isDesktop) return;
+    const viewportHeight = Math.max(1, window.innerHeight);
+    narrativeSections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const distance = (center - viewportHeight / 2) / viewportHeight;
+      const bounded = Math.max(-1.4, Math.min(1.4, distance));
+      section.style.setProperty('--section-shift', `${(bounded * -22).toFixed(2)}px`);
+      section.style.setProperty('--section-energy', String((1 - Math.min(1, Math.abs(bounded))).toFixed(3)));
+    });
+  };
+
+  if (prefersReduced) {
+    narrativeSections.forEach((section) => section.classList.add('section-in-view'));
+  } else {
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('section-in-view');
+        sectionObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+    narrativeSections.forEach((section) => sectionObserver.observe(section));
+  }
+
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('[data-progress]');
   const updateProgress = () => {
@@ -34,6 +67,7 @@
     root.style.setProperty('--scroll-ratio', ratio.toFixed(4));
     root.style.setProperty('--scroll-depth', `${Math.min(42, window.scrollY * 0.022).toFixed(2)}px`);
     if (header) header.classList.toggle('is-scrolled', window.scrollY > 18);
+    updateSectionDepth();
   };
   updateProgress();
   window.addEventListener('scroll', updateProgress, { passive: true });
