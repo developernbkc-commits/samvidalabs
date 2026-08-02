@@ -3,6 +3,7 @@
   const root = document.documentElement;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDesktop = window.matchMedia('(min-width: 921px)').matches;
+  root.classList.add('spatial-ui');
 
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.setAttribute('content', '#f7f9fc');
@@ -13,22 +14,108 @@
   const yearNode = document.querySelector('[data-year]');
   if (yearNode) yearNode.textContent = new Date().getFullYear();
 
+  const spatialSurfaces = [...document.querySelectorAll([
+    '.panel', '.card', '.bento-card', '.form-shell', '.proof-card', '.cta-band',
+    '.stat-card', '.highlight-band', '.not-found-card', '.ticker-shell',
+    '.showcase-card', '.decision-route-card', '.evidence-link-card',
+    '.blueprint-shell', '.product-command-visual', '.hero-product-link', '.command-window',
+  ].join(','))];
+  spatialSurfaces.forEach((node, index) => {
+    node.classList.add('spatial-surface');
+    node.dataset.depthLevel = String((index % 3) + 1);
+  });
+
+  const narrativeSections = [...document.querySelectorAll('main > section')];
+  narrativeSections.forEach((section, index) => {
+    const sectionIndex = String(index + 1).padStart(2, '0');
+    section.dataset.sectionIndex = sectionIndex;
+    section.querySelector('.section-head')?.setAttribute('data-section-index', sectionIndex);
+  });
+
+  let chapterTicks = [];
+  if (narrativeSections.length > 1) {
+    const chapterRail = document.createElement('div');
+    chapterRail.className = 'chapter-rail';
+    chapterRail.setAttribute('aria-hidden', 'true');
+    chapterTicks = narrativeSections.map((section, index) => {
+      const tick = document.createElement('span');
+      tick.className = 'chapter-tick';
+      tick.dataset.index = section.dataset.sectionIndex;
+      if (index === 0) tick.classList.add('is-active');
+      chapterRail.appendChild(tick);
+      return tick;
+    });
+    document.body.appendChild(chapterRail);
+  }
+
+  const updateSectionDepth = () => {
+    if (prefersReduced || !isDesktop) return;
+    const viewportHeight = Math.max(1, window.innerHeight);
+    let currentIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    narrativeSections.forEach((section, index) => {
+      const rect = section.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const distance = (center - viewportHeight / 2) / viewportHeight;
+      const bounded = Math.max(-1.4, Math.min(1.4, distance));
+      const absoluteDistance = Math.abs(distance);
+      if (absoluteDistance < closestDistance) {
+        closestDistance = absoluteDistance;
+        currentIndex = index;
+      }
+      section.style.setProperty('--section-shift', `${(bounded * -22).toFixed(2)}px`);
+      section.style.setProperty('--section-energy', String((1 - Math.min(1, Math.abs(bounded))).toFixed(3)));
+    });
+    narrativeSections.forEach((section, index) => section.classList.toggle('section-current', index === currentIndex));
+    chapterTicks.forEach((tick, index) => tick.classList.toggle('is-active', index === currentIndex));
+  };
+
+  if (prefersReduced) {
+    narrativeSections.forEach((section) => section.classList.add('section-in-view'));
+  } else {
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('section-in-view');
+        sectionObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+    narrativeSections.forEach((section) => sectionObserver.observe(section));
+  }
+
   const header = document.querySelector('.site-header');
   const progress = document.querySelector('[data-progress]');
   const updateProgress = () => {
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
     const ratio = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
     if (progress) progress.style.width = `${ratio * 100}%`;
+    root.style.setProperty('--scroll-ratio', ratio.toFixed(4));
+    root.style.setProperty('--scroll-depth', `${Math.min(42, window.scrollY * 0.022).toFixed(2)}px`);
     if (header) header.classList.toggle('is-scrolled', window.scrollY > 18);
+    updateSectionDepth();
   };
   updateProgress();
   window.addEventListener('scroll', updateProgress, { passive: true });
   window.addEventListener('resize', updateProgress);
 
   const cursorHalo = document.querySelector('.cursor-halo');
+  const ambientSignalPointer = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    active: false,
+  };
   const updatePointer = (event) => {
     root.style.setProperty('--mx', `${event.clientX}px`);
     root.style.setProperty('--my', `${event.clientY}px`);
+    const nx = event.clientX / Math.max(1, window.innerWidth) - 0.5;
+    const ny = event.clientY / Math.max(1, window.innerHeight) - 0.5;
+    root.style.setProperty('--parallax-x', `${(nx * -18).toFixed(2)}px`);
+    root.style.setProperty('--parallax-y', `${(ny * -12).toFixed(2)}px`);
+    root.style.setProperty('--chrome-x', `${(nx * 6.3).toFixed(2)}px`);
+    root.style.setProperty('--chrome-y', `${(ny * 4.2).toFixed(2)}px`);
+    ambientSignalPointer.x = event.clientX;
+    ambientSignalPointer.y = event.clientY;
+    ambientSignalPointer.active = true;
     document.body.classList.add('pointer-active');
     if (cursorHalo && !prefersReduced) {
       cursorHalo.style.left = `${event.clientX}px`;
@@ -37,6 +124,131 @@
   };
   window.addEventListener('pointermove', updatePointer, { passive: true });
   window.addEventListener('pointerdown', updatePointer, { passive: true });
+  window.addEventListener('blur', () => {
+    ambientSignalPointer.active = false;
+  });
+
+  const chromeLayer = document.querySelector('.site-chrome');
+  if (chromeLayer && isDesktop && !prefersReduced) {
+    const ambientCanvas = document.createElement('canvas');
+    ambientCanvas.className = 'ambient-signal-canvas';
+    ambientCanvas.setAttribute('aria-hidden', 'true');
+    chromeLayer.appendChild(ambientCanvas);
+
+    const ambientContext = ambientCanvas.getContext('2d', { alpha: true });
+    const ambientPalette = ['0,169,199', '85,71,217', '255,122,89'];
+    const ambientNodes = Array.from({ length: 28 }, (_, index) => ({
+      x: Math.random(),
+      y: Math.random(),
+      baseY: Math.random(),
+      radius: 1.1 + Math.random() * 1.9,
+      speed: 0.000012 + Math.random() * 0.00002,
+      phase: Math.random() * Math.PI * 2,
+      color: ambientPalette[index % ambientPalette.length],
+    }));
+    let ambientWidth = 0;
+    let ambientHeight = 0;
+    let ambientDpr = 1;
+    let ambientLastTime = performance.now();
+    let ambientFrame = null;
+
+    const resizeAmbientCanvas = () => {
+      ambientDpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+      ambientWidth = window.innerWidth;
+      ambientHeight = window.innerHeight;
+      ambientCanvas.width = Math.round(ambientWidth * ambientDpr);
+      ambientCanvas.height = Math.round(ambientHeight * ambientDpr);
+      ambientContext.setTransform(ambientDpr, 0, 0, ambientDpr, 0, 0);
+    };
+
+    const drawAmbientSignals = (time) => {
+      const elapsed = Math.min(40, time - ambientLastTime);
+      ambientLastTime = time;
+      ambientContext.clearRect(0, 0, ambientWidth, ambientHeight);
+
+      for (let ribbon = 0; ribbon < 3; ribbon += 1) {
+        const baseline = ambientHeight * (0.22 + ribbon * 0.27);
+        ambientContext.beginPath();
+        for (let step = 0; step <= 16; step += 1) {
+          const x = (step / 16) * ambientWidth;
+          const pointerDrift = ambientSignalPointer.active
+            ? (ambientSignalPointer.y / Math.max(1, ambientHeight) - 0.5) * (8 + ribbon * 3)
+            : 0;
+          const y = baseline
+            + Math.sin(time * 0.00016 + step * 0.72 + ribbon * 1.9) * (18 + ribbon * 6)
+            + pointerDrift;
+          if (step === 0) ambientContext.moveTo(x, y);
+          else ambientContext.lineTo(x, y);
+        }
+        ambientContext.strokeStyle = `rgba(${ambientPalette[ribbon]},${0.025 + ribbon * 0.007})`;
+        ambientContext.lineWidth = 1;
+        ambientContext.stroke();
+      }
+
+      ambientNodes.forEach((node) => {
+        node.x += node.speed * elapsed;
+        if (node.x > 1.04) node.x = -0.04;
+        node.y = node.baseY + Math.sin(time * 0.00022 + node.phase) * 0.024;
+      });
+
+      for (let i = 0; i < ambientNodes.length; i += 1) {
+        const first = ambientNodes[i];
+        const firstX = first.x * ambientWidth;
+        const firstY = first.y * ambientHeight;
+        for (let j = i + 1; j < ambientNodes.length; j += 1) {
+          const second = ambientNodes[j];
+          const secondX = second.x * ambientWidth;
+          const secondY = second.y * ambientHeight;
+          const dx = firstX - secondX;
+          const dy = firstY - secondY;
+          const distance = Math.hypot(dx, dy);
+          if (distance > 138) continue;
+          ambientContext.beginPath();
+          ambientContext.moveTo(firstX, firstY);
+          ambientContext.lineTo(secondX, secondY);
+          ambientContext.strokeStyle = `rgba(20,92,125,${(1 - distance / 138) * 0.045})`;
+          ambientContext.lineWidth = 0.7;
+          ambientContext.stroke();
+        }
+
+        ambientContext.beginPath();
+        ambientContext.arc(firstX, firstY, first.radius, 0, Math.PI * 2);
+        ambientContext.fillStyle = `rgba(${first.color},0.16)`;
+        ambientContext.fill();
+      }
+
+      if (ambientSignalPointer.active) {
+        const pointerGlow = ambientContext.createRadialGradient(
+          ambientSignalPointer.x,
+          ambientSignalPointer.y,
+          0,
+          ambientSignalPointer.x,
+          ambientSignalPointer.y,
+          170,
+        );
+        pointerGlow.addColorStop(0, 'rgba(0,169,199,.055)');
+        pointerGlow.addColorStop(.48, 'rgba(85,71,217,.022)');
+        pointerGlow.addColorStop(1, 'rgba(85,71,217,0)');
+        ambientContext.fillStyle = pointerGlow;
+        ambientContext.fillRect(0, 0, ambientWidth, ambientHeight);
+      }
+
+      ambientFrame = requestAnimationFrame(drawAmbientSignals);
+    };
+
+    resizeAmbientCanvas();
+    ambientFrame = requestAnimationFrame(drawAmbientSignals);
+    window.addEventListener('resize', resizeAmbientCanvas);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && ambientFrame) {
+        cancelAnimationFrame(ambientFrame);
+        ambientFrame = null;
+      } else if (!document.hidden && !ambientFrame) {
+        ambientLastTime = performance.now();
+        ambientFrame = requestAnimationFrame(drawAmbientSignals);
+      }
+    });
+  }
 
   const navToggle = document.querySelector('[data-nav-toggle]');
   const nav = document.querySelector('[data-nav]');
@@ -128,6 +340,8 @@
       const reset = () => {
         node.style.setProperty('--scene-x', '50%');
         node.style.setProperty('--scene-y', '56%');
+        node.style.setProperty('--scene-rx', '1.1deg');
+        node.style.setProperty('--scene-ry', '-2.8deg');
       };
       node.addEventListener('pointermove', (event) => {
         const rect = node.getBoundingClientRect();
@@ -137,6 +351,8 @@
         const sy = 50 + py * 12;
         node.style.setProperty('--scene-x', `${sx.toFixed(2)}%`);
         node.style.setProperty('--scene-y', `${sy.toFixed(2)}%`);
+        node.style.setProperty('--scene-rx', `${((0.5 - py) * 4.2).toFixed(2)}deg`);
+        node.style.setProperty('--scene-ry', `${((px - 0.5) * 6.2).toFixed(2)}deg`);
       });
       node.addEventListener('pointerleave', reset);
       node.addEventListener('pointercancel', reset);
