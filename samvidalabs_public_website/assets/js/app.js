@@ -32,17 +32,42 @@
     section.querySelector('.section-head')?.setAttribute('data-section-index', sectionIndex);
   });
 
+  let chapterTicks = [];
+  if (narrativeSections.length > 1) {
+    const chapterRail = document.createElement('div');
+    chapterRail.className = 'chapter-rail';
+    chapterRail.setAttribute('aria-hidden', 'true');
+    chapterTicks = narrativeSections.map((section, index) => {
+      const tick = document.createElement('span');
+      tick.className = 'chapter-tick';
+      tick.dataset.index = section.dataset.sectionIndex;
+      if (index === 0) tick.classList.add('is-active');
+      chapterRail.appendChild(tick);
+      return tick;
+    });
+    document.body.appendChild(chapterRail);
+  }
+
   const updateSectionDepth = () => {
     if (prefersReduced || !isDesktop) return;
     const viewportHeight = Math.max(1, window.innerHeight);
-    narrativeSections.forEach((section) => {
+    let currentIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    narrativeSections.forEach((section, index) => {
       const rect = section.getBoundingClientRect();
       const center = rect.top + rect.height / 2;
       const distance = (center - viewportHeight / 2) / viewportHeight;
       const bounded = Math.max(-1.4, Math.min(1.4, distance));
+      const absoluteDistance = Math.abs(distance);
+      if (absoluteDistance < closestDistance) {
+        closestDistance = absoluteDistance;
+        currentIndex = index;
+      }
       section.style.setProperty('--section-shift', `${(bounded * -22).toFixed(2)}px`);
       section.style.setProperty('--section-energy', String((1 - Math.min(1, Math.abs(bounded))).toFixed(3)));
     });
+    narrativeSections.forEach((section, index) => section.classList.toggle('section-current', index === currentIndex));
+    chapterTicks.forEach((tick, index) => tick.classList.toggle('is-active', index === currentIndex));
   };
 
   if (prefersReduced) {
@@ -74,6 +99,11 @@
   window.addEventListener('resize', updateProgress);
 
   const cursorHalo = document.querySelector('.cursor-halo');
+  const ambientSignalPointer = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    active: false,
+  };
   const updatePointer = (event) => {
     root.style.setProperty('--mx', `${event.clientX}px`);
     root.style.setProperty('--my', `${event.clientY}px`);
@@ -83,6 +113,9 @@
     root.style.setProperty('--parallax-y', `${(ny * -12).toFixed(2)}px`);
     root.style.setProperty('--chrome-x', `${(nx * 6.3).toFixed(2)}px`);
     root.style.setProperty('--chrome-y', `${(ny * 4.2).toFixed(2)}px`);
+    ambientSignalPointer.x = event.clientX;
+    ambientSignalPointer.y = event.clientY;
+    ambientSignalPointer.active = true;
     document.body.classList.add('pointer-active');
     if (cursorHalo && !prefersReduced) {
       cursorHalo.style.left = `${event.clientX}px`;
@@ -91,6 +124,131 @@
   };
   window.addEventListener('pointermove', updatePointer, { passive: true });
   window.addEventListener('pointerdown', updatePointer, { passive: true });
+  window.addEventListener('blur', () => {
+    ambientSignalPointer.active = false;
+  });
+
+  const chromeLayer = document.querySelector('.site-chrome');
+  if (chromeLayer && isDesktop && !prefersReduced) {
+    const ambientCanvas = document.createElement('canvas');
+    ambientCanvas.className = 'ambient-signal-canvas';
+    ambientCanvas.setAttribute('aria-hidden', 'true');
+    chromeLayer.appendChild(ambientCanvas);
+
+    const ambientContext = ambientCanvas.getContext('2d', { alpha: true });
+    const ambientPalette = ['0,169,199', '85,71,217', '255,122,89'];
+    const ambientNodes = Array.from({ length: 28 }, (_, index) => ({
+      x: Math.random(),
+      y: Math.random(),
+      baseY: Math.random(),
+      radius: 1.1 + Math.random() * 1.9,
+      speed: 0.000012 + Math.random() * 0.00002,
+      phase: Math.random() * Math.PI * 2,
+      color: ambientPalette[index % ambientPalette.length],
+    }));
+    let ambientWidth = 0;
+    let ambientHeight = 0;
+    let ambientDpr = 1;
+    let ambientLastTime = performance.now();
+    let ambientFrame = null;
+
+    const resizeAmbientCanvas = () => {
+      ambientDpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+      ambientWidth = window.innerWidth;
+      ambientHeight = window.innerHeight;
+      ambientCanvas.width = Math.round(ambientWidth * ambientDpr);
+      ambientCanvas.height = Math.round(ambientHeight * ambientDpr);
+      ambientContext.setTransform(ambientDpr, 0, 0, ambientDpr, 0, 0);
+    };
+
+    const drawAmbientSignals = (time) => {
+      const elapsed = Math.min(40, time - ambientLastTime);
+      ambientLastTime = time;
+      ambientContext.clearRect(0, 0, ambientWidth, ambientHeight);
+
+      for (let ribbon = 0; ribbon < 3; ribbon += 1) {
+        const baseline = ambientHeight * (0.22 + ribbon * 0.27);
+        ambientContext.beginPath();
+        for (let step = 0; step <= 16; step += 1) {
+          const x = (step / 16) * ambientWidth;
+          const pointerDrift = ambientSignalPointer.active
+            ? (ambientSignalPointer.y / Math.max(1, ambientHeight) - 0.5) * (8 + ribbon * 3)
+            : 0;
+          const y = baseline
+            + Math.sin(time * 0.00016 + step * 0.72 + ribbon * 1.9) * (18 + ribbon * 6)
+            + pointerDrift;
+          if (step === 0) ambientContext.moveTo(x, y);
+          else ambientContext.lineTo(x, y);
+        }
+        ambientContext.strokeStyle = `rgba(${ambientPalette[ribbon]},${0.025 + ribbon * 0.007})`;
+        ambientContext.lineWidth = 1;
+        ambientContext.stroke();
+      }
+
+      ambientNodes.forEach((node) => {
+        node.x += node.speed * elapsed;
+        if (node.x > 1.04) node.x = -0.04;
+        node.y = node.baseY + Math.sin(time * 0.00022 + node.phase) * 0.024;
+      });
+
+      for (let i = 0; i < ambientNodes.length; i += 1) {
+        const first = ambientNodes[i];
+        const firstX = first.x * ambientWidth;
+        const firstY = first.y * ambientHeight;
+        for (let j = i + 1; j < ambientNodes.length; j += 1) {
+          const second = ambientNodes[j];
+          const secondX = second.x * ambientWidth;
+          const secondY = second.y * ambientHeight;
+          const dx = firstX - secondX;
+          const dy = firstY - secondY;
+          const distance = Math.hypot(dx, dy);
+          if (distance > 138) continue;
+          ambientContext.beginPath();
+          ambientContext.moveTo(firstX, firstY);
+          ambientContext.lineTo(secondX, secondY);
+          ambientContext.strokeStyle = `rgba(20,92,125,${(1 - distance / 138) * 0.045})`;
+          ambientContext.lineWidth = 0.7;
+          ambientContext.stroke();
+        }
+
+        ambientContext.beginPath();
+        ambientContext.arc(firstX, firstY, first.radius, 0, Math.PI * 2);
+        ambientContext.fillStyle = `rgba(${first.color},0.16)`;
+        ambientContext.fill();
+      }
+
+      if (ambientSignalPointer.active) {
+        const pointerGlow = ambientContext.createRadialGradient(
+          ambientSignalPointer.x,
+          ambientSignalPointer.y,
+          0,
+          ambientSignalPointer.x,
+          ambientSignalPointer.y,
+          170,
+        );
+        pointerGlow.addColorStop(0, 'rgba(0,169,199,.055)');
+        pointerGlow.addColorStop(.48, 'rgba(85,71,217,.022)');
+        pointerGlow.addColorStop(1, 'rgba(85,71,217,0)');
+        ambientContext.fillStyle = pointerGlow;
+        ambientContext.fillRect(0, 0, ambientWidth, ambientHeight);
+      }
+
+      ambientFrame = requestAnimationFrame(drawAmbientSignals);
+    };
+
+    resizeAmbientCanvas();
+    ambientFrame = requestAnimationFrame(drawAmbientSignals);
+    window.addEventListener('resize', resizeAmbientCanvas);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && ambientFrame) {
+        cancelAnimationFrame(ambientFrame);
+        ambientFrame = null;
+      } else if (!document.hidden && !ambientFrame) {
+        ambientLastTime = performance.now();
+        ambientFrame = requestAnimationFrame(drawAmbientSignals);
+      }
+    });
+  }
 
   const navToggle = document.querySelector('[data-nav-toggle]');
   const nav = document.querySelector('[data-nav]');
