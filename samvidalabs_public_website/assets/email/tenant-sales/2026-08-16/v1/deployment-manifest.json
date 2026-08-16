@@ -1,0 +1,32 @@
+{
+  "release": "2026-08-16",
+  "version": "v1",
+  "asset_base_url": "https://samvidalabs.com/assets/email/tenant-sales/2026-08-16/v1",
+  "cache_policy": "public, max-age=31536000, immutable",
+  "assets": [
+    {
+      "filename": "bco-logo-email.png",
+      "media_type": "image/png",
+      "bytes": 16668,
+      "sha256": "f194511ef7734513a0baac5e3a9b959f82a97a7c1f7d73ceb8a18ab74a4dcf07"
+    },
+    {
+      "filename": "bco-email-hero-cinematic.jpg",
+      "media_type": "image/jpeg",
+      "bytes": 87661,
+      "sha256": "98fdfd9c2ee912b75b7e1eb725b0b74559181d4b7710408006ed803fbfa2fe35"
+    },
+    {
+      "filename": "bco-dashboard-proof.jpg",
+      "media_type": "image/jpeg",
+      "bytes": 59030,
+      "sha256": "002ff6eb1b94bd30373b0a33062cef1d16958e1523a521d59e45471216192e82"
+    },
+    {
+      "filename": "bco-mobile-role-proof.jpg",
+      "media_type": "image/jpeg",
+      "bytes": 85207,
+      "sha256": "375849dd472299e02548dd097f41ea7e371503455c6bfd3180a9c7588515fc4e"
+    }
+  ]
+}
